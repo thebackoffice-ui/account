@@ -1,0 +1,52 @@
+/* ══════════════════════════════════════════
+   POSITIONS — canonical colour system
+   Single source of truth for all avatars,
+   tags, map nodes, and badge contexts.
+   Uses [data-pos] attribute + class fallbacks.
+══════════════════════════════════════════ */
+
+/* ── Base avatar/bubble quality ── */
+.av,.nd-rep-av,.rep-avatar,.initial-circle,.dashboard-avatar,.mini-avatar,.rp-av,.lb-row-av,.lb-p-av{
+  font-weight:700!important;filter:saturate(1.15);box-shadow:0 2px 8px rgba(0,0,0,.08)!important;
+}
+.map-node,.map-bubble,.mini-map-bubble{border-width:2px!important;box-shadow:0 3px 10px rgba(0,0,0,.12)!important;}
+
+/* ── Trainee: vivid mint green ── */
+[data-pos="Trainee"],[data-position="Trainee"],.pos-Trainee,.pos-colour-Trainee,.pos-colour-trainee{
+  background:var(--pos-trainee-bg)!important;color:var(--pos-trainee-color)!important;
+}
+
+/* ── Solo: vivid amber/orange ── */
+[data-pos="Solo"],[data-position="Solo"],.pos-Solo,.pos-colour-Solo,.pos-colour-solo{
+  background:var(--pos-solo-bg)!important;color:var(--pos-solo-color)!important;
+}
+
+/* ── Leader: vivid royal blue ── */
+[data-pos="Leader"],[data-position="Leader"],.pos-Leader,.pos-colour-Leader,.pos-colour-leader{
+  background:var(--pos-leader-bg)!important;color:var(--pos-leader-color)!important;
+}
+
+/* ── Core: vivid violet/purple ── */
+[data-pos="Core"],[data-position="Core"],.pos-Core,.pos-colour-Core,.pos-colour-core{
+  background:var(--pos-core-bg)!important;color:var(--pos-core-color)!important;
+}
+
+/* ── Junior / Junior Partner: vivid hot pink/rose ── */
+[data-pos="Junior"],[data-position="Junior"],[data-position="Junior Partner"],[data-position="Junior Partner +"],
+.pos-Junior,.pos-JuniorPartner,.pos-colour-Junior,.pos-colour-junior,.pos-colour-JuniorPartner,.pos-colour-juniorpartner{
+  background:var(--pos-junior-bg)!important;color:var(--pos-junior-color)!important;
+}
+
+/* ── Position tag pill ── */
+.pos-tag{display:inline-flex;align-items:center;font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;border:1px solid transparent;}
+.pos-tag.pos-colour-Trainee,.pos-tag.pos-colour-trainee,.pos-tag[data-pos="Trainee"]{border-color:var(--pos-trainee-border);}
+.pos-tag.pos-colour-Solo,.pos-tag.pos-colour-solo,.pos-tag[data-pos="Solo"]{border-color:var(--pos-solo-border);}
+.pos-tag.pos-colour-Leader,.pos-tag.pos-colour-leader,.pos-tag[data-pos="Leader"]{border-color:var(--pos-leader-border);}
+.pos-tag.pos-colour-Core,.pos-tag.pos-colour-core,.pos-tag[data-pos="Core"]{border-color:var(--pos-core-border);}
+.pos-tag.pos-colour-Junior,.pos-tag.pos-colour-junior,.pos-tag.pos-colour-JuniorPartner,.pos-tag.pos-colour-juniorpartner{border-color:var(--pos-junior-border);}
+
+/* ── Flag colours ── */
+.flag-Conversation,.nd-rep-flag.flag-Conversation{background:#f97316!important;}
+.flag-AtRisk,.nd-rep-flag.flag-AtRisk{background:#dc2626!important;}
+.flag-DoingWell,.nd-rep-flag.flag-DoingWell{background:#16a34a!important;}
+.flag-Watch,.nd-rep-flag.flag-Watch{background:#0d6b61!important;}
