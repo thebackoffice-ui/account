@@ -20,7 +20,7 @@ var SVG={
   reps:'<svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="6" cy="7" r="3"/><circle cx="14" cy="7" r="3"/><path d="M1 17a6 6 0 0 1 10 0M9 17a6 6 0 0 1 10 0" stroke-linecap="round"/></svg>',
 };
 
-const CAT_COLORS={personal:'#2563ff',work:'#22c55e',team:'#ec4899',reminder:'#f59e0b',admin:'#7c3aed',orange:'#f97316',rose:'#f43f5e',cyan:'#06b6d4'};
+
 
 function renderHome(){
   const annSlot=document.getElementById('announcement-slot');
@@ -2131,7 +2131,6 @@ function epSetAttach(val){
 }
 
 // ── Tab switching ─────────────────────────────────────
-const TABS=['home','reps','weekly','reports','review','events','calendar','leaderboard','map','notifications','notes','payrep','planner','profile'];
 function switchTab(tab){
   TABS.forEach(id=>{
     const nav=document.getElementById(`nav-${id}`);
@@ -2307,7 +2306,7 @@ async function markAllNotifsRead(){
 // ══════════════════════════════════════════════════════
 // REP SCORECARD
 // ══════════════════════════════════════════════════════
-let repNotes={};// keyed by rep id, array of {text,date}
+repNotes={};// keyed by rep id, array of {text,date}
 
 function openScorecard(repId){
   const rep=roster.find(r=>r.id===repId);if(!rep)return;
