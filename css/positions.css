@@ -50,3 +50,15 @@
 .flag-AtRisk,.nd-rep-flag.flag-AtRisk{background:#dc2626!important;}
 .flag-DoingWell,.nd-rep-flag.flag-DoingWell{background:#16a34a!important;}
 .flag-Watch,.nd-rep-flag.flag-Watch{background:#0d6b61!important;}
+
+/* ── Avatar base ── */
+.av{border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;flex-shrink:0;}
+.av28{width:28px;height:28px;font-size:10px;}
+.av34{width:34px;height:34px;font-size:12px;}
+
+.av,.nd-rep-av,.rp-av,.lb-row-av,.lb-p-av{font-weight:700!important;filter:saturate(1.15);box-shadow:0 2px 8px rgba(0,0,0,.08)!important;}
+
+/* ── Ack button ── */
+.ack-btn{display:flex;align-items:center;gap:6px;background:var(--success-soft);border:1px solid rgba(22,163,74,.2);color:var(--success);font-family:var(--font);font-size:12px;font-weight:600;padding:6px 12px;border-radius:20px;cursor:pointer;transition:all .15s;width:fit-content;}
+.ack-btn:hover{background:rgba(22,163,74,.15);}
+.ack-btn.done{background:var(--success);color:#fff;border-color:var(--success);}
