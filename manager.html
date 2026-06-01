@@ -100,27 +100,52 @@
     </div>
 
     <!-- REPS TAB -->
-    <div class="tab-content" id="ptab-reps">
-      <div class="topbar">
-        <button class="mob-menu-btn" onclick="openMobileSidebar()" aria-label="Menu"><svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 5h14M3 10h14M3 15h14" stroke-linecap="round"/></svg></button>
-        <span class="topbar-title">My Reps</span>
-        <div class="topbar-right" id="reps-topbar-right"></div>
+<div class="tab-content" id="ptab-reps">
+  <div class="topbar">
+    <button class="mob-menu-btn" onclick="openMobileSidebar()" aria-label="Menu"><svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 5h14M3 10h14M3 15h14" stroke-linecap="round"/></svg></button>
+    <span class="topbar-title">My Reps</span>
+    <div class="topbar-right" id="reps-topbar-right"></div>
+  </div>
+  <div class="page-scroll"><div class="page-wrap" id="reps-wrap">
+
+    <!-- Add New Rep card -->
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:20px 22px;margin-bottom:18px;box-shadow:var(--s1);">
+      <div style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:14px;">Add New Rep</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">
+        <div class="field-group" style="margin-bottom:0;">
+          <label class="field-lbl">Full Name <span style="color:var(--danger);">*</span></label>
+          <input class="field-input" id="add-rep-name" type="text" placeholder="Full name…" style="margin-bottom:0;"/>
+        </div>
+        <div class="field-group" style="margin-bottom:0;">
+          <label class="field-lbl">Email</label>
+          <input class="field-input" id="add-rep-email" type="email" placeholder="email@example.com" style="margin-bottom:0;"/>
+        </div>
+        <div class="field-group" style="margin-bottom:0;">
+          <label class="field-lbl">Position</label>
+          <select class="field-input" id="add-rep-position" style="margin-bottom:0;"><option value="">Select position…</option></select>
+        </div>
+        <div class="field-group" style="margin-bottom:0;">
+          <label class="field-lbl">Reports to</label>
+          <select class="field-input" id="add-rep-leader" style="margin-bottom:0;"><option value="">Not assigned</option></select>
+        </div>
       </div>
-      <div class="page-scroll"><div class="page-wrap" id="reps-wrap">
-        <div style="display:flex;gap:8px;align-items:center;margin-bottom:14px;flex-wrap:wrap;">
-          <input id="rep-search" type="text" placeholder="Search reps…" class="field-input" style="max-width:200px;margin-bottom:0;" oninput="filterReps()"/>
-          <div id="rep-filter-pills" style="display:flex;gap:5px;flex-wrap:wrap;"></div>
-        </div>
-        <div style="display:flex;gap:8px;align-items:flex-end;margin-bottom:18px;flex-wrap:wrap;background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:14px 16px;box-shadow:var(--s1);">
-          <div class="field-group" style="margin-bottom:0;flex:1;min-width:120px;"><label class="field-lbl">Name</label><input class="field-input" id="add-rep-name" type="text" placeholder="Full name" style="margin-bottom:0;"/></div>
-          <div class="field-group" style="margin-bottom:0;flex:1;min-width:120px;"><label class="field-lbl">Email</label><input class="field-input" id="add-rep-email" type="email" placeholder="Optional" style="margin-bottom:0;"/></div>
-          <div class="field-group" style="margin-bottom:0;"><label class="field-lbl">Position</label><select class="field-input" id="add-rep-position" style="margin-bottom:0;"><option value="">Select…</option></select></div>
-          <div class="field-group" style="margin-bottom:0;"><label class="field-lbl">Reports to</label><select class="field-input" id="add-rep-leader" style="margin-bottom:0;"><option value="">Not assigned</option></select></div>
-          <button onclick="addRep()" style="background:var(--accent);border:none;color:#fff;font-family:var(--font);font-size:13px;font-weight:600;padding:9px 18px;border-radius:var(--r);cursor:pointer;white-space:nowrap;">+ Add rep</button>
-        </div>
-        <div id="rep-list"></div>
-      </div></div>
+      <button onclick="addRep()" style="width:100%;background:var(--accent);border:none;color:#fff;font-family:var(--font);font-size:13px;font-weight:700;padding:11px;border-radius:var(--r);cursor:pointer;letter-spacing:.02em;transition:opacity .15s;">Add rep</button>
     </div>
+
+    <!-- Search + filter pills -->
+    <div style="display:flex;gap:8px;align-items:center;margin-bottom:14px;flex-wrap:wrap;">
+      <input id="rep-search" type="text" placeholder="Search by name or position…" class="field-input" style="max-width:260px;margin-bottom:0;" oninput="filterReps()"/>
+      <div id="rep-filter-pills" style="display:flex;gap:5px;flex-wrap:wrap;"></div>
+    </div>
+
+    <!-- Rep list -->
+    <div style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:8px;">Team Roster</div>
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);box-shadow:var(--s1);overflow:hidden;">
+      <div id="rep-list"></div>
+    </div>
+
+  </div></div>
+</div>
 
     <!-- WEEKLY UPDATE TAB -->
     <div class="tab-content" id="ptab-weekly">
