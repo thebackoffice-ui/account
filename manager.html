@@ -13,7 +13,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
-<!-- Stylesheets — load order matters -->
+<!-- Stylesheets -->
 <link rel="stylesheet" href="css/base.css">
 <link rel="stylesheet" href="css/positions.css">
 <link rel="stylesheet" href="css/components.css">
@@ -21,7 +21,7 @@
 </head>
 <body>
 
-<!-- ══ LOGIN ══════════════════════════════════════════════ -->
+<!-- LOGIN -->
 <div id="login-screen" class="login-wrap">
   <div class="login-box">
     <div class="login-logo">The <span>Back Office</span></div>
@@ -36,10 +36,10 @@
   </div>
 </div>
 
-<!-- ══ MOBILE SIDEBAR OVERLAY ═════════════════════════════ -->
+<!-- MOBILE SIDEBAR OVERLAY -->
 <div class="mob-sidebar-overlay" id="mob-sidebar-overlay" onclick="closeMobileSidebar()"></div>
 
-<!-- ══ APP SHELL ══════════════════════════════════════════ -->
+<!-- APP SHELL -->
 <div id="app-shell" class="app-shell" style="display:none;">
 
   <!-- SIDEBAR -->
@@ -89,14 +89,12 @@
     <!-- HOME TAB -->
     <div class="tab-content active" id="ptab-home">
       <div class="topbar">
-        <button class="mob-menu-btn" onclick="openMobileSidebar()" aria-label="Menu">
-          <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 5h14M3 10h14M3 15h14" stroke-linecap="round"/></svg>
-        </button>
+        <button class="mob-menu-btn" onclick="openMobileSidebar()" aria-label="Menu"><svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 5h14M3 10h14M3 15h14" stroke-linecap="round"/></svg></button>
         <span class="topbar-title" id="home-greeting">Welcome back 👋</span>
         <div class="topbar-right"><span class="week-pill" id="week-pill">—</span></div>
       </div>
       <div class="home-scroll" id="home-grid-wrap">
-        <div id="ann-wrap"></div>
+        <div id="announcement-slot"></div>
         <div id="home-grid"></div>
       </div>
     </div>
@@ -108,7 +106,20 @@
         <span class="topbar-title">My Reps</span>
         <div class="topbar-right" id="reps-topbar-right"></div>
       </div>
-      <div class="page-scroll"><div class="page-wrap" id="reps-wrap"></div></div>
+      <div class="page-scroll"><div class="page-wrap" id="reps-wrap">
+        <div style="display:flex;gap:8px;align-items:center;margin-bottom:14px;flex-wrap:wrap;">
+          <input id="rep-search" type="text" placeholder="Search reps…" class="field-input" style="max-width:200px;margin-bottom:0;" oninput="filterReps()"/>
+          <div id="rep-filter-pills" style="display:flex;gap:5px;flex-wrap:wrap;"></div>
+        </div>
+        <div style="display:flex;gap:8px;align-items:flex-end;margin-bottom:18px;flex-wrap:wrap;background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:14px 16px;box-shadow:var(--s1);">
+          <div class="field-group" style="margin-bottom:0;flex:1;min-width:120px;"><label class="field-lbl">Name</label><input class="field-input" id="add-rep-name" type="text" placeholder="Full name" style="margin-bottom:0;"/></div>
+          <div class="field-group" style="margin-bottom:0;flex:1;min-width:120px;"><label class="field-lbl">Email</label><input class="field-input" id="add-rep-email" type="email" placeholder="Optional" style="margin-bottom:0;"/></div>
+          <div class="field-group" style="margin-bottom:0;"><label class="field-lbl">Position</label><select class="field-input" id="add-rep-position" style="margin-bottom:0;"><option value="">Select…</option></select></div>
+          <div class="field-group" style="margin-bottom:0;"><label class="field-lbl">Reports to</label><select class="field-input" id="add-rep-leader" style="margin-bottom:0;"><option value="">Not assigned</option></select></div>
+          <button onclick="addRep()" style="background:var(--accent);border:none;color:#fff;font-family:var(--font);font-size:13px;font-weight:600;padding:9px 18px;border-radius:var(--r);cursor:pointer;white-space:nowrap;">+ Add rep</button>
+        </div>
+        <div id="rep-list"></div>
+      </div></div>
     </div>
 
     <!-- WEEKLY UPDATE TAB -->
@@ -120,7 +131,9 @@
       </div>
       <div class="page-scroll"><div class="page-wrap">
         <div id="banner-done" style="display:none;background:var(--success-soft);border:1px solid rgba(22,163,74,.2);border-radius:var(--r);padding:12px 16px;margin-bottom:16px;font-size:13px;font-weight:600;color:var(--success);">✓ Team submitted for this week</div>
-        <div id="weekly-wrap"></div>
+        <div id="wk-headcount-bar" style="display:none;background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:10px 14px;margin-bottom:14px;font-size:13px;font-weight:500;align-items:center;gap:6px;"></div>
+        <div id="week-list" style="margin-bottom:16px;"></div>
+        <button id="submit-btn" onclick="submitWeek()" style="background:var(--accent);border:none;color:#fff;font-family:var(--font);font-size:14px;font-weight:600;padding:13px;border-radius:var(--r);cursor:pointer;width:100%;">Submit team for this week</button>
       </div></div>
     </div>
 
@@ -132,7 +145,7 @@
         <div class="topbar-right" id="map-topbar-right"></div>
       </div>
       <div id="map-wrap" style="flex:1;overflow:hidden;position:relative;">
-        <div class="map-toolbar" id="map-toolbar" style="position:absolute;top:12px;left:12px;z-index:10;display:flex;gap:6px;flex-wrap:wrap;">
+        <div class="map-toolbar" style="position:absolute;top:12px;left:12px;z-index:10;display:flex;gap:6px;flex-wrap:wrap;">
           <button class="tb-btn" onclick="rebuildMap()">↺ Rebuild</button>
           <button class="tb-btn" onclick="resetZoom()">⊙ Reset view</button>
           <button class="tb-btn" onclick="saveMap()">💾 Save map</button>
@@ -215,7 +228,14 @@
           <button id="new-review-btn" onclick="showReviewForm()" style="background:var(--accent);border:none;color:#fff;font-family:var(--font);font-size:12px;font-weight:600;padding:6px 14px;border-radius:var(--rsm);cursor:pointer;">+ New review</button>
         </div>
       </div>
-      <div class="page-scroll"><div class="page-wrap" id="review-wrap"></div></div>
+      <div class="page-scroll"><div class="page-wrap" id="review-wrap">
+        <div id="review-form-view" style="display:flex;flex-direction:column;">
+          <div id="review-form-wrap"></div>
+        </div>
+        <div id="review-past-view" style="display:none;flex-direction:column;">
+          <div id="past-reviews-list"></div>
+        </div>
+      </div></div>
     </div>
 
     <!-- REP PAY REPORTS TAB -->
@@ -295,7 +315,7 @@
                 <svg class="nls-ico" width="13" height="13" viewBox="0 0 16 16" fill="none"><circle cx="6" cy="6" r="4.5" stroke="currentColor" stroke-width="1.5"/><path d="M9.5 9.5L12 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
                 <input class="notes-list-search" id="notes-search" type="text" placeholder="Search notes…" oninput="notesFilter()"/>
               </div>
-              <button class="notes-sort-btn" id="notes-sort-btn" onclick="notesCycleSort()" title="Change sort order">↕</button>
+              <button class="notes-sort-btn" id="notes-sort-btn" onclick="notesCycleSort()">↕</button>
             </div>
             <div class="notes-list-items" id="notes-list-items"></div>
           </div>
@@ -323,8 +343,8 @@
                 <select class="notes-tmpl-sel" id="n-saved-tmpl-sel" onchange="notesApplySavedTemplate()" style="margin-left:4px;"><option value="">— saved templates —</option></select>
               </div>
               <div class="notes-toolbar" id="notes-toolbar">
-                <button class="nt-btn" data-cmd="bold" title="Bold (Ctrl+B)"><b>B</b></button>
-                <button class="nt-btn" data-cmd="italic" title="Italic (Ctrl+I)"><i>I</i></button>
+                <button class="nt-btn" data-cmd="bold" title="Bold"><b>B</b></button>
+                <button class="nt-btn" data-cmd="italic" title="Italic"><i>I</i></button>
                 <button class="nt-btn" data-cmd="strikeThrough" title="Strikethrough"><s>S</s></button>
                 <div class="nt-sep"></div>
                 <button class="nt-btn" data-cmd="h1" title="Heading 1">H1</button>
@@ -336,7 +356,7 @@
                 <button class="nt-btn" data-cmd="checklist" title="Checklist">☑ Tasks</button>
                 <div class="nt-sep"></div>
                 <button class="nt-btn" data-cmd="blockquote" title="Quote">❝</button>
-                <button class="nt-btn" data-cmd="code" title="Code block">&lt;/&gt;</button>
+                <button class="nt-btn" data-cmd="code" title="Code">&lt;/&gt;</button>
                 <button class="nt-btn" data-cmd="insertHorizontalRule" title="Divider">—</button>
                 <div class="nt-sep"></div>
                 <button class="nt-btn" onclick="document.execCommand('undo')" title="Undo">↩</button>
@@ -380,7 +400,7 @@
         <div class="dp-save-bar">
           <span class="dp-save-status" id="dp-save-status"></span>
           <div style="margin-left:auto;display:flex;align-items:center;gap:8px;">
-            <button class="dp-pdf-btn" onclick="dpDownloadPDF()" title="Download today as PDF">⬇ PDF</button>
+            <button class="dp-pdf-btn" onclick="dpDownloadPDF()">⬇ PDF</button>
           </div>
         </div>
       </div>
@@ -434,7 +454,6 @@
         <span class="topbar-title">My Profile</span>
       </div>
       <div class="page-scroll"><div class="page-wrap" id="profile-wrap">
-        <!-- Profile content rendered by profileRender() -->
         <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:20px 22px;margin-bottom:16px;box-shadow:var(--s1);">
           <div style="display:flex;align-items:center;gap:16px;margin-bottom:16px;">
             <div id="profile-big-avatar" style="width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,#8533F5,#D4B0FC);display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:700;color:#fff;overflow:hidden;flex-shrink:0;">?</div>
@@ -523,14 +542,14 @@
     <div class="modal-field"><label class="modal-label">Title</label><input class="modal-input" id="ev-title" type="text" placeholder="Event name…"/></div>
     <div class="modal-field"><label class="modal-label">Category</label>
       <div class="colour-picker" id="ev-colour-picker" style="gap:10px;">
-        <div class="colour-swatch selected" data-cat="personal" style="background:#2563ff;" title="Personal" onclick="selectCat(this,'personal')"></div>
-        <div class="colour-swatch" data-cat="work" style="background:#22c55e;" title="Work" onclick="selectCat(this,'work')"></div>
-        <div class="colour-swatch" data-cat="team" style="background:#ec4899;" title="Pink" onclick="selectCat(this,'team')"></div>
-        <div class="colour-swatch" data-cat="reminder" style="background:#f59e0b;" title="Yellow" onclick="selectCat(this,'reminder')"></div>
-        <div class="colour-swatch" data-cat="admin" style="background:#7c3aed;" title="Purple" onclick="selectCat(this,'admin')"></div>
-        <div class="colour-swatch" data-cat="orange" style="background:#f97316;" title="Orange" onclick="selectCat(this,'orange')"></div>
-        <div class="colour-swatch" data-cat="rose" style="background:#f43f5e;" title="Rose" onclick="selectCat(this,'rose')"></div>
-        <div class="colour-swatch" data-cat="cyan" style="background:#06b6d4;" title="Cyan" onclick="selectCat(this,'cyan')"></div>
+        <div class="colour-swatch selected" data-cat="personal" style="background:#2563ff;" onclick="selectCat(this,'personal')"></div>
+        <div class="colour-swatch" data-cat="work" style="background:#22c55e;" onclick="selectCat(this,'work')"></div>
+        <div class="colour-swatch" data-cat="team" style="background:#ec4899;" onclick="selectCat(this,'team')"></div>
+        <div class="colour-swatch" data-cat="reminder" style="background:#f59e0b;" onclick="selectCat(this,'reminder')"></div>
+        <div class="colour-swatch" data-cat="admin" style="background:#7c3aed;" onclick="selectCat(this,'admin')"></div>
+        <div class="colour-swatch" data-cat="orange" style="background:#f97316;" onclick="selectCat(this,'orange')"></div>
+        <div class="colour-swatch" data-cat="rose" style="background:#f43f5e;" onclick="selectCat(this,'rose')"></div>
+        <div class="colour-swatch" data-cat="cyan" style="background:#06b6d4;" onclick="selectCat(this,'cyan')"></div>
       </div>
       <div style="font-size:11px;color:var(--muted);margin-top:4px;" id="ev-cat-lbl">Personal</div>
     </div>
@@ -569,7 +588,7 @@
   </button>
 </nav>
 
-<!-- JAVASCRIPT — load order matters; app.js must come first -->
+<!-- JAVASCRIPT -->
 <script src="js/app.js"></script>
 <script src="js/main.js"></script>
 
