@@ -106,23 +106,14 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:14
 .sidebar-mgr{display:none;}
 
 /* ── TOPBAR ── */
-.topbar{height:54px;border-bottom:1px solid var(--border);background:var(--surface);padding:0 24px 0 24px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;padding-right:280px;}
-.topbar-title{font-size:17px;font-weight:700;letter-spacing:-.02em;color:var(--text);}
-.topbar-title-group{display:flex;flex-direction:column;gap:1px;}
+.topbar{height:60px;border-bottom:1px solid var(--border);background:var(--surface);padding:0 24px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
+/* Home topbar — blends into the page, no separator line */
+.topbar-home{background:var(--bg);border-bottom:none;}
+.topbar-title{font-size:20px;font-weight:700;letter-spacing:-.02em;color:var(--text);}
+.topbar-title-group{display:flex;flex-direction:column;gap:2px;}
 .topbar-date{font-size:12px;color:var(--muted);font-weight:400;}
 .topbar-right{display:flex;align-items:center;gap:10px;}
 .week-pill{font-size:11px;font-weight:600;background:#f0fdfa;color:#0f766e;border:1px solid #99f6e4;padding:4px 11px;border-radius:20px;}
-
-/* ── SHARED TOPBAR RIGHT (fixed) ── */
-#shared-topbar-right{
-  position:fixed;top:0;right:0;z-index:150;
-  height:54px;
-  display:flex;align-items:center;gap:8px;
-  padding:0 20px;
-  background:var(--surface);
-  border-bottom:1px solid var(--border);
-  border-left:1px solid var(--border);
-}
 
 /* Notification bell button */
 .tb-icon-btn{
@@ -161,7 +152,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:14
 
 /* ── NOTIFICATION DROPDOWN ── */
 .notif-dropdown{
-  position:fixed;top:60px;right:16px;z-index:500;
+  position:fixed;top:70px;right:20px;z-index:500;
   width:340px;
   background:var(--surface);
   border:1px solid var(--border);
@@ -1194,11 +1185,9 @@ select.wr-input{cursor:pointer;appearance:none;}
   /* ── Base ── */
   html, body { overflow: hidden; }
 
-  /* ── Shared topbar right on mobile ── */
-  #shared-topbar-right { padding: 0 12px; gap: 6px; }
+  /* ── Topbar profile on mobile: hide name/role text ── */
   .tb-profile-info { display: none; }
   .tb-avatar { width: 30px; height: 30px; font-size: 12px; }
-  .topbar { padding-right: 90px !important; }
   .notif-dropdown { width: calc(100vw - 24px); right: 12px; }
 
   /* ── Prevent iOS auto-zoom on input focus (triggered when font-size < 16px) ── */
