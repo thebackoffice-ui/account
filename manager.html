@@ -74,28 +74,33 @@
 
     <!-- HOME -->
     <div class="tab-content active" id="ptab-home">
-      <div class="topbar topbar-home">
+      <!-- Mobile-only top bar: just the hamburger button -->
+      <div class="topbar home-mob-bar">
         <button class="mob-menu-btn" onclick="openMobileSidebar()" aria-label="Menu"><svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 5h14M3 10h14M3 15h14" stroke-linecap="round"/></svg></button>
-        <div class="topbar-title-group">
-          <span class="topbar-title">Dashboard</span>
-          <span class="topbar-date" id="topbar-date">—</span>
-        </div>
-        <div class="topbar-right">
-          <span class="week-pill" id="week-pill">—</span>
-          <button class="tb-icon-btn" id="tb-notif-btn" onclick="toggleNotifDropdown()" title="Notifications" aria-label="Notifications">
-            <svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M10 2a6 6 0 0 1 6 6c0 3.5 1.5 5 1.5 5h-15S4 11.5 4 8a6 6 0 0 1 6-6z" stroke-linejoin="round"/><path d="M8.5 17a1.5 1.5 0 0 0 3 0" stroke-linecap="round"/></svg>
-            <span id="tb-notif-badge" class="tb-badge" style="display:none;">0</span>
-          </button>
-          <div class="tb-profile-wrap" onclick="switchTab('profile')">
-            <div class="sidebar-avatar tb-avatar" id="sb-avatar">?</div>
-            <div class="tb-profile-info">
-              <div class="tb-profile-name" id="tb-name">—</div>
-              <div class="tb-profile-role" id="tb-role">Manager</div>
+        <span class="week-pill" id="week-pill-mob">—</span>
+      </div>
+      <div class="home-scroll">
+        <!-- Page header — sits on the grey background, no white bar -->
+        <div class="home-page-hdr">
+          <div class="home-page-hdr-left">
+            <div class="home-page-title">Dashboard</div>
+            <div class="home-page-date" id="topbar-date">—</div>
+          </div>
+          <div class="home-page-hdr-right">
+            <span class="week-pill" id="week-pill">—</span>
+            <button class="tb-icon-btn" id="tb-notif-btn" onclick="toggleNotifDropdown()" title="Notifications" aria-label="Notifications">
+              <svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M10 2a6 6 0 0 1 6 6c0 3.5 1.5 5 1.5 5h-15S4 11.5 4 8a6 6 0 0 1 6-6z" stroke-linejoin="round"/><path d="M8.5 17a1.5 1.5 0 0 0 3 0" stroke-linecap="round"/></svg>
+              <span id="tb-notif-badge" class="tb-badge" style="display:none;">0</span>
+            </button>
+            <div class="tb-profile-wrap" onclick="switchTab('profile')">
+              <div class="sidebar-avatar tb-avatar" id="sb-avatar">?</div>
+              <div class="tb-profile-info">
+                <div class="tb-profile-name" id="tb-name">—</div>
+                <div class="tb-profile-role" id="tb-role">Manager</div>
+              </div>
             </div>
           </div>
         </div>
-      </div>
-      <div class="home-scroll">
         <div id="announcement-slot"></div>
         <div id="home-grid"></div>
       </div>

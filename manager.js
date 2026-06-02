@@ -125,8 +125,7 @@ function showApp(){
   // Today's date in topbar
   const dateEl=document.getElementById('topbar-date');
   if(dateEl)dateEl.textContent=formatTodayDate();
-  document.getElementById('week-pill').textContent=formatWeek(weekKey);
-  document.getElementById('week-pill2').textContent=formatWeek(weekKey);
+  ['week-pill','week-pill2','week-pill-mob'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=formatWeek(weekKey);});
   document.title=`${dn} · The Back Office`;
   loadAll();
 }
