@@ -4739,49 +4739,62 @@ document.addEventListener('DOMContentLoaded', () => {
 /* ── Mobile inline-grid override ── */
 function mobFixGrids() {
   if (window.innerWidth > 768) return;
-  // Fix any inline grid > 2 cols in home-grid
-  document.querySelectorAll('#home-grid [style]').forEach(el => {
-    const s = el.style;
-    if (s.gridTemplateColumns) {
-      const cols = s.gridTemplateColumns.trim();
-      // Detect 3+ col grids and collapse them
-      if (/repeat\([3-9]/.test(cols) || cols.split(/\s+(?!\/\/)/).filter(p => p.includes('fr') || p.includes('px')).length > 2) {
-        el.style.gridTemplateColumns = '1fr 1fr';
-        el.style.gap = '10px';
-      }
+
+  // ── Home dashboard rows ──
+  document.querySelectorAll('#home-grid > div').forEach(row => {
+    const gc = row.style.gridTemplateColumns;
+    if (!gc) return;
+    if (/repeat\(4/.test(gc)) {
+      // Stat tiles: 2 cols
+      row.style.gridTemplateColumns = '1fr 1fr';
+      row.style.gap = '10px';
+    } else {
+      // All other rows (chart+links+cal, lb+agents): single col
+      row.style.gridTemplateColumns = '1fr';
+      row.style.gap = '12px';
     }
   });
-  // Stat tiles row — collapse to 2 cols
-  const statRows = document.querySelectorAll('#home-grid > div');
-  statRows.forEach(row => {
-    if (row.style.gridTemplateColumns && row.style.gridTemplateColumns.includes('repeat(4')) {
-      row.style.gridTemplateColumns = '1fr 1fr';
+
+  // ── Any remaining inline 3+ col or fixed-px grids across all tabs ──
+  // Scoped to tab content only, skips calendar day grid and form input rows
+  document.querySelectorAll('.tab-content [style], .page-scroll [style], .home-scroll [style]').forEach(el => {
+    const gc = el.style.gridTemplateColumns;
+    if (!gc) return;
+    // Skip: 7-col calendar grid, 2-col grids without px widths, form rows
+    if (/repeat\(7/.test(gc)) return;
+    if (el.closest('.wr-stat-row, .wr-network-row, .wr-goal-row, .wr-expense-row')) return;
+    // Collapse 3+ col grids to 1 col
+    const hasRepeat3Plus = /repeat\([3-9]/.test(gc);
+    const hasManyFr = (gc.match(/\bfr\b/g)||[]).length >= 3;
+    const hasFixedPx = /\d+px/.test(gc) && !(/^1fr$|^1fr 1fr$/.test(gc.trim()));
+    if (hasRepeat3Plus || hasManyFr || hasFixedPx) {
+      // Keep 2-col for things already at 1fr 1fr
+      if (gc.trim() === '1fr 1fr') return;
+      el.style.gridTemplateColumns = '1fr';
+      if (!el.style.gap) el.style.gap = '10px';
     }
-    // The 3-col chart/links/calendar row
-    if (row.style.gridTemplateColumns && (row.style.gridTemplateColumns.includes('1fr 220px') || row.style.gridTemplateColumns.includes('1fr 1fr 1fr') || row.style.gridTemplateColumns.includes('1fr 260px'))) {
-      row.style.gridTemplateColumns = '1fr';
-    }
-    // Bottom 2-col rows
-    if (row.style.gridTemplateColumns && row.style.gridTemplateColumns === '1fr 1fr' && row.children.length >= 2) {
-      // Keep 2-col for stat tiles, but ensure padding is mobile-friendly
-    }
+  });
+
+  // ── Rep pay stat row (has ID) ──
+  const rpRow = document.getElementById('rp-rep-stat-row');
+  if (rpRow) rpRow.style.gridTemplateColumns = '1fr 1fr';
+
+  // ── Profile info grid (repeat(4,1fr)) ──
+  document.querySelectorAll('#ptab-profile [style*="repeat(4"]').forEach(el => {
+    el.style.gridTemplateColumns = '1fr 1fr';
+    el.style.gap = '10px';
   });
 }
 
-// Run on load and after any renderHome call
-document.addEventListener('DOMContentLoaded', () => setTimeout(mobFixGrids, 300));
-window.addEventListener('resize', mobFixGrids);
+// Hook into switchTab so it runs after every tab renders
+const _origSwitchTab = switchTab;
+window.switchTab = function(tab) {
+  _origSwitchTab.apply(this, arguments);
+  setTimeout(mobFixGrids, 80);
+};
 
-// Patch renderHome if available
-(function patchRenderHome() {
-  const _rh = window.renderHome;
-  if (typeof _rh === 'function') {
-    window.renderHome = function() {
-      _rh.apply(this, arguments);
-      setTimeout(mobFixGrids, 50);
-    };
-  } else {
-    // Try again after scripts load
-    setTimeout(patchRenderHome, 500);
-  }
-})();
+// Run on initial load and resize
+window.addEventListener('DOMContentLoaded', () => setTimeout(mobFixGrids, 400));
+window.addEventListener('resize', mobFixGrids);
+// Also run after data loads (renderHome is called async)
+setTimeout(mobFixGrids, 1500);
