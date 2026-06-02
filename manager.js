@@ -2162,34 +2162,54 @@ function rebuildMap(){
   active.forEach(r=>{const pid=r.leader==='__mgr__'?'mgr':r.leader;if(sp.nodes.find(n=>n.id===pid))sp.edges.push({a:pid,b:r.id});});
   applyRadialLayout(CX,CY);
   renderSpider();renderLegend();
+  scheduleMapSave();
 }
 function applyRadialLayout(CX,CY){
   // Build children map
   const children={};
   sp.nodes.forEach(n=>{children[n.id]=[];});
   sp.edges.forEach(e=>{if(children[e.a])children[e.a].push(e.b);});
+
   // BFS to assign depths
   const depths={mgr:0};const q=['mgr'];
   while(q.length){const id=q.shift();(children[id]||[]).forEach(cid=>{if(!(cid in depths)){depths[cid]=(depths[id]||0)+1;q.push(cid);}});}
   sp.nodes.forEach(n=>{if(!(n.id in depths))depths[n.id]=1;});
-  // Count subtree sizes for arc allocation
+
+  // Count nodes per depth ring so we can size radii dynamically
+  const nodesAtDepth={};
+  sp.nodes.forEach(n=>{const d=depths[n.id]||0;nodesAtDepth[d]=(nodesAtDepth[d]||0)+1;});
+
+  // Dynamic radius: large enough that nodes at this ring don't overlap
+  // Nodes are ~110px wide; add 30px gap between them
+  const MIN_NODE_ARC=140;
+  function getDynamicRadius(depth){
+    const count=nodesAtDepth[depth]||1;
+    const minR=(count*MIN_NODE_ARC)/(2*Math.PI);
+    const baseR=depth*210;
+    return Math.max(minR,baseR,200);
+  }
+
+  // Subtree size for proportional arc allocation
   function subtreeSize(id){return 1+(children[id]||[]).reduce((s,c)=>s+subtreeSize(c),0);}
-  const RING_RADII=[0,220,400,560,710];
-  function getR(d){return RING_RADII[Math.min(d,RING_RADII.length-1)]||d*200;}
-  // Place manager at center
+
+  // Place manager at centre
   const mgr=sp.nodes.find(n=>n.id==='mgr');if(mgr){mgr.x=CX;mgr.y=CY;}
-  // Recursively place children in arcs
+
+  // Recursively place children, enforcing a minimum arc per node
   function placeChildren(parentId,arcStart,arcEnd,depth){
     const kids=(children[parentId]||[]);
     if(!kids.length)return;
-    const parent=sp.nodes.find(n=>n.id===parentId);
-    if(!parent)return;
-    const r=getR(depth);
+    const r=getDynamicRadius(depth);
+    const available=arcEnd-arcStart;
     const totalSize=kids.reduce((s,k)=>s+subtreeSize(k),0);
+    const minArc=MIN_NODE_ARC/r; // min arc in radians for one node at this radius
+    // Give each kid proportional arc but at least minArc
+    const rawArcs=kids.map(kid=>Math.max((available*subtreeSize(kid)/totalSize),minArc));
+    const totalRaw=rawArcs.reduce((s,a)=>s+a,0);
+    const scale=totalRaw>available?available/totalRaw:1;
     let cursor=arcStart;
-    kids.forEach(kid=>{
-      const sz=subtreeSize(kid);
-      const kidArc=(arcEnd-arcStart)*(sz/totalSize);
+    kids.forEach((kid,i)=>{
+      const kidArc=rawArcs[i]*scale;
       const midAngle=cursor+kidArc/2;
       const node=sp.nodes.find(n=>n.id===kid);
       if(node){node.x=CX+r*Math.cos(midAngle);node.y=CY+r*Math.sin(midAngle);}
@@ -2197,25 +2217,62 @@ function applyRadialLayout(CX,CY){
       cursor+=kidArc;
     });
   }
-  const topKids=children['mgr']||[];
-  // Spread full 360° for top-level children
-  const spread=topKids.length===1?Math.PI*2:Math.PI*2;
-  placeChildren('mgr',-Math.PI/2,-Math.PI/2+spread,1);
-  // Orphans (no parent found)
+  placeChildren('mgr',-Math.PI/2,-Math.PI/2+Math.PI*2,1);
+
+  // Orphans fallback
   const placed=new Set(sp.nodes.filter(n=>n.x!==0||n.y!==0||n.id==='mgr').map(n=>n.id));
-  sp.nodes.filter(n=>!placed.has(n.id)).forEach((n,i)=>{n.x=CX+220*Math.cos(i*1.2);n.y=CY+220*Math.sin(i*1.2);});
+  sp.nodes.filter(n=>!placed.has(n.id)).forEach((n,i)=>{n.x=CX+260*Math.cos(i*1.2);n.y=CY+260*Math.sin(i*1.2);});
+
+  // Repulsion pass: push any still-overlapping nodes apart (30 iterations max)
+  const REPEL=135,STRENGTH=0.45;
+  for(let iter=0;iter<30;iter++){
+    let moved=false;
+    for(let i=0;i<sp.nodes.length;i++){
+      for(let j=i+1;j<sp.nodes.length;j++){
+        const a=sp.nodes[i],b=sp.nodes[j];
+        if(a.id==='mgr'||b.id==='mgr')continue;
+        const dx=b.x-a.x,dy=b.y-a.y;
+        const dist=Math.sqrt(dx*dx+dy*dy);
+        if(dist<REPEL&&dist>0.01){
+          const force=(REPEL-dist)*STRENGTH;
+          const nx=dx/dist,ny=dy/dist;
+          a.x-=nx*force*0.5;a.y-=ny*force*0.5;
+          b.x+=nx*force*0.5;b.y+=ny*force*0.5;
+          moved=true;
+        }
+      }
+    }
+    if(!moved)break;
+  }
 }
 function renderLegend(){const pos=[...new Set(roster.filter(r=>!r.leaver).map(r=>r.position).filter(Boolean))];document.getElementById('spider-legend').innerHTML=[['Manager','Manager'],...pos.map(p=>[p,p])].map(([p,l])=>{return`<span class="pos-tag ${posClass(p)}" style="font-size:10px;">${esc(l)}</span>`;}).join('');}
 function renderSpider(){renderEdges();renderNodes();}
 function renderEdges(){const svg=document.getElementById('spider-svg');if(!svg)return;const pad=NODE_W+80;const xs=sp.nodes.map(n=>n.x),ys=sp.nodes.map(n=>n.y);const minX=xs.length?Math.min(...xs)-pad:0,minY=ys.length?Math.min(...ys)-pad:0;const maxX=xs.length?Math.max(...xs)+pad:800,maxY=ys.length?Math.max(...ys)+pad:600;const offX=-Math.min(minX,0),offY=-Math.min(minY,0);const w=maxX+offX,h=maxY+offY;svg.style.width=w+'px';svg.style.height=h+'px';svg.dataset.offx=offX;svg.dataset.offy=offY;sp.nodes.forEach(n=>{const el=document.getElementById('spider-node-'+n.id);if(el){el.style.left=(n.x+offX-NODE_W/2)+'px';el.style.top=(n.y+offY-NODE_H/2)+'px';}});const ec=isDark()?'rgba(255,255,255,.18)':'rgba(15,118,110,.28)';const ed=isDark()?'rgba(255,255,255,.4)':'rgba(15,118,110,.7)';function clipToBox(cx,cy,tx,ty){const hw=NODE_W/2+2,hh=NODE_H/2+2;const dx=tx-cx,dy=ty-cy;if(Math.abs(dx)<0.01&&Math.abs(dy)<0.01)return{x:cx,y:cy};const sx=dx===0?Infinity:hw/Math.abs(dx),sy=dy===0?Infinity:hh/Math.abs(dy);const s=Math.min(sx,sy);return{x:cx+dx*s,y:cy+dy*s};}svg.innerHTML=sp.edges.map(e=>{const a=sp.nodes.find(n=>n.id===e.a),b=sp.nodes.find(n=>n.id===e.b);if(!a||!b)return'';const p1=clipToBox(a.x,a.y,b.x,b.y),p2=clipToBox(b.x,b.y,a.x,a.y);const x1=p1.x+offX,y1=p1.y+offY,x2=p2.x+offX,y2=p2.y+offY;return`<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${ec}" stroke-width="1.5"/><circle cx="${x2}" cy="${y2}" r="3" fill="${ed}"/>`;}).join('');}
-function renderNodes(){const container=document.getElementById('spider-nodes');if(!container)return;container.innerHTML='';const svg=document.getElementById('spider-svg');const offX=svg?parseFloat(svg.dataset.offx||0):0,offY=svg?parseFloat(svg.dataset.offy||0):0;sp.nodes.forEach(n=>{const el=document.createElement('div');el.id='spider-node-'+n.id;el.className='map-node '+posClass(n.position||'');el.style.cssText=`position:absolute;left:${n.x+offX-NODE_W/2}px;top:${n.y+offY-NODE_H/2}px;width:${NODE_W}px;height:${NODE_H}px;border-radius:4px;display:flex;align-items:center;justify-content:center;font-family:var(--font);font-size:12px;font-weight:500;cursor:grab;user-select:none;box-shadow:var(--niond-shadow);`;let lbl=n.label;if(lbl.length>16)lbl=lbl.slice(0,15)+'…';el.innerHTML=`<span style="padding:0 22px 0 8px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;text-align:center;">${esc(lbl)}</span>`;const rb=document.createElement('button');rb.textContent='×';rb.style.cssText=`position:absolute;top:-8px;right:-8px;width:18px;height:18px;background:var(--surface);border:1px solid var(--border2);color:var(--muted);border-radius:50%;font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;`;rb.onmouseenter=()=>{rb.style.background='#fee2e2';rb.style.color='var(--danger)';};rb.onmouseleave=()=>{rb.style.background='var(--surface)';rb.style.color='var(--muted)';};rb.addEventListener('click',ev=>{ev.stopPropagation();sp.nodes=sp.nodes.filter(x=>x.id!==n.id);sp.edges=sp.edges.filter(e=>e.a!==n.id&&e.b!==n.id);renderSpider();});el.appendChild(rb);const ab=document.createElement('button');ab.textContent='+';ab.style.cssText=`position:absolute;bottom:-10px;left:50%;transform:translateX(-50%);width:20px;height:20px;background:var(--accent);border:none;color:#fff;border-radius:50%;font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;box-shadow:0 1px 4px rgba(0,0,0,.2);z-index:10;`;ab.addEventListener('click',ev=>{ev.stopPropagation();openAddPanel(n,ev);});el.appendChild(ab);let drag=false,sx,sy,ox,oy;el.addEventListener('mousedown',ev=>{if(ev.target===rb||ev.target===ab)return;drag=true;sx=ev.clientX;sy=ev.clientY;ox=n.x;oy=n.y;el.style.cursor='grabbing';el.style.zIndex=100;ev.stopPropagation();ev.preventDefault();});document.addEventListener('mousemove',ev=>{if(!drag)return;n.x=ox+(ev.clientX-sx)/mapScale;n.y=oy+(ev.clientY-sy)/mapScale;el.style.left=(n.x-NODE_W/2)+'px';el.style.top=(n.y-NODE_H/2)+'px';renderEdges();});document.addEventListener('mouseup',()=>{if(!drag)return;drag=false;el.style.cursor='grab';el.style.zIndex='';});container.appendChild(el);});}
+function renderNodes(){const container=document.getElementById('spider-nodes');if(!container)return;container.innerHTML='';const svg=document.getElementById('spider-svg');const offX=svg?parseFloat(svg.dataset.offx||0):0,offY=svg?parseFloat(svg.dataset.offy||0):0;sp.nodes.forEach(n=>{const el=document.createElement('div');el.id='spider-node-'+n.id;el.className='map-node '+posClass(n.position||'');el.style.cssText=`position:absolute;left:${n.x+offX-NODE_W/2}px;top:${n.y+offY-NODE_H/2}px;width:${NODE_W}px;height:${NODE_H}px;border-radius:4px;display:flex;align-items:center;justify-content:center;font-family:var(--font);font-size:12px;font-weight:500;cursor:grab;user-select:none;box-shadow:var(--niond-shadow);`;let lbl=n.label;if(lbl.length>16)lbl=lbl.slice(0,15)+'…';el.innerHTML=`<span style="padding:0 22px 0 8px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;text-align:center;">${esc(lbl)}</span>`;const rb=document.createElement('button');rb.textContent='×';rb.style.cssText=`position:absolute;top:-8px;right:-8px;width:18px;height:18px;background:var(--surface);border:1px solid var(--border2);color:var(--muted);border-radius:50%;font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;`;rb.onmouseenter=()=>{rb.style.background='#fee2e2';rb.style.color='var(--danger)';};rb.onmouseleave=()=>{rb.style.background='var(--surface)';rb.style.color='var(--muted)';};rb.addEventListener('click',ev=>{ev.stopPropagation();sp.nodes=sp.nodes.filter(x=>x.id!==n.id);sp.edges=sp.edges.filter(e=>e.a!==n.id&&e.b!==n.id);renderSpider();});el.appendChild(rb);const ab=document.createElement('button');ab.textContent='+';ab.style.cssText=`position:absolute;bottom:-10px;left:50%;transform:translateX(-50%);width:20px;height:20px;background:var(--accent);border:none;color:#fff;border-radius:50%;font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;box-shadow:0 1px 4px rgba(0,0,0,.2);z-index:10;`;ab.addEventListener('click',ev=>{ev.stopPropagation();openAddPanel(n,ev);});el.appendChild(ab);let drag=false,sx,sy,ox,oy;el.addEventListener('mousedown',ev=>{if(ev.target===rb||ev.target===ab)return;drag=true;sx=ev.clientX;sy=ev.clientY;ox=n.x;oy=n.y;el.style.cursor='grabbing';el.style.zIndex=100;ev.stopPropagation();ev.preventDefault();});document.addEventListener('mousemove',ev=>{if(!drag)return;n.x=ox+(ev.clientX-sx)/mapScale;n.y=oy+(ev.clientY-sy)/mapScale;el.style.left=(n.x-NODE_W/2)+'px';el.style.top=(n.y-NODE_H/2)+'px';renderEdges();});document.addEventListener('mouseup',()=>{if(!drag)return;drag=false;el.style.cursor='grab';el.style.zIndex='';scheduleMapSave();});container.appendChild(el);});}
 function openAddPanel(pn,ev){addPanelTargetId=pn.id;const panel=document.getElementById('spider-add-panel');const onMap=new Set(sp.nodes.map(n=>n.id));const av=roster.filter(r=>!r.leaver&&!onMap.has(r.id));document.getElementById('spider-panel-label').textContent=`Add report to ${pn.label}`;const list=document.getElementById('spider-panel-list');if(!av.length){list.innerHTML='<div style="font-size:12px;color:var(--muted);">All active reps on map.</div>';}else{list.innerHTML=av.map(r=>{return`<button class="${posClass(r.position||'')}" onclick="addMapNode('${r.id}')" style="font-family:var(--font);font-size:12px;font-weight:500;padding:7px 10px;border-radius:4px;cursor:pointer;text-align:left;width:100%;border-width:1px;border-style:solid;">${esc(r.name)} <span style="opacity:.6;">${esc(r.position||'—')}</span></button>`;}).join('');}const br=ev.target.getBoundingClientRect();panel.style.left=Math.min(br.left,window.innerWidth-230)+'px';panel.style.top=(br.bottom+8)+'px';panel.style.display='block';setTimeout(()=>document.addEventListener('click',outsideClick,{once:true}),0);}
 function outsideClick(ev){const p=document.getElementById('spider-add-panel');if(!p.contains(ev.target))closeAddPanel();else document.addEventListener('click',outsideClick,{once:true});}
 function closeAddPanel(){document.getElementById('spider-add-panel').style.display='none';addPanelTargetId=null;}
 function addMapNode(repId){closeAddPanel();const parent=sp.nodes.find(n=>n.id===addPanelTargetId);if(!parent)return;const rep=roster.find(r=>r.id===repId);if(!rep)return;// Find angle from root to parent for direction context
-var mgr=sp.nodes.find(n=>n.id==='mgr');const baseAngle=mgr?(Math.atan2(parent.y-mgr.y,parent.x-mgr.x)):0;const siblings=sp.edges.filter(e=>e.a===parent.id).length;const RDIST=150;const spread=Math.PI*0.55;const angleOffset=(siblings===0?0:(siblings%2===1?1:-1)*Math.ceil(siblings/2)*spread/Math.max(siblings,2));const angle=baseAngle+angleOffset;sp.nodes.push({id:rep.id,label:rep.name,position:rep.position||'default',x:parent.x+RDIST*Math.cos(angle),y:parent.y+RDIST*Math.sin(angle)});sp.edges.push({a:parent.id,b:rep.id});renderSpider();}
+var mgr=sp.nodes.find(n=>n.id==='mgr');const baseAngle=mgr?(Math.atan2(parent.y-mgr.y,parent.x-mgr.x)):0;const siblings=sp.edges.filter(e=>e.a===parent.id).length;const RDIST=150;const spread=Math.PI*0.55;const angleOffset=(siblings===0?0:(siblings%2===1?1:-1)*Math.ceil(siblings/2)*spread/Math.max(siblings,2));const angle=baseAngle+angleOffset;sp.nodes.push({id:rep.id,label:rep.name,position:rep.position||'default',x:parent.x+RDIST*Math.cos(angle),y:parent.y+RDIST*Math.sin(angle)});sp.edges.push({a:parent.id,b:rep.id});renderSpider();scheduleMapSave();}
 function clearMap(){if(!confirm('Clear the map?'))return;sp.nodes=[];sp.edges=[];sp.nodes.push({id:'mgr',label:getMgrDisplay(),position:'Manager',x:500,y:420});renderSpider();}
 async function saveMap(){const md=JSON.stringify({nodes:sp.nodes,edges:sp.edges});try{await api({action:'saveMap',manager:managerName,mapData:md});showToast('Map saved ✓','success');}catch(e){showToast('Failed to save map','error');}}
+
+// Auto-save: debounced 2s after last change — no need to click Save layout
+let _mapSaveTimer=null;
+function scheduleMapSave(){
+  clearTimeout(_mapSaveTimer);
+  const ind=document.getElementById('map-autosave-ind');
+  if(ind){ind.textContent='Saving…';ind.style.opacity='1';}
+  _mapSaveTimer=setTimeout(async()=>{
+    const md=JSON.stringify({nodes:sp.nodes,edges:sp.edges});
+    try{
+      await api({action:'saveMap',manager:managerName,mapData:md});
+      if(ind){ind.textContent='Saved ✓';setTimeout(()=>{ind.style.opacity='0';},1500);}
+    }catch(e){
+      if(ind){ind.textContent='Save failed';setTimeout(()=>{ind.style.opacity='0';},2000);}
+    }
+  },2000);
+}
 
 // ── Tab switching ─────────────────────────────────────
 // ── EVENT PLANNER ─────────────────────────────────────

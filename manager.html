@@ -311,9 +311,9 @@
       <div class="map-wrap">
         <div class="map-toolbar">
           <button class="tb-btn" onclick="rebuildMap()">↺ Rebuild</button>
-          <button class="tb-btn" onclick="saveMap()">Save layout</button>
           <button class="tb-btn red" onclick="clearMap()">Clear</button>
           <button class="tb-btn" onclick="resetZoom()">Reset view</button>
+          <span id="map-autosave-ind" style="font-size:11px;color:var(--muted);font-family:var(--font);opacity:0;transition:opacity .3s;align-self:center;"></span>
           <div id="spider-legend" style="display:flex;gap:6px;flex-wrap:wrap;margin-left:4px;"></div>
         </div>
         <div class="map-stage-wrap" id="map-stage-wrap">
