@@ -349,7 +349,7 @@ function renderHome(){
   document.getElementById('home-grid').innerHTML=`
 
     <!-- ROW 1: Stat tiles — solid colour blocks -->
-    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px;">
+    <div class="hg-row hg-stats">
 
       <div style="background:#abc9ff;border-radius:10px;padding:20px 22px;cursor:default;position:relative;overflow:hidden;">
         <div style="font-size:11px;font-weight:700;color:#1a3870;margin-bottom:8px;text-transform:uppercase;letter-spacing:.08em;">Active Reps</div>
@@ -381,7 +381,7 @@ function renderHome(){
     </div>
 
     <!-- ROW 2: Chart (left) + Links (centre-right) + Calendar (far right) -->
-    <div style="display:grid;grid-template-columns:1fr 220px 260px;gap:14px;margin-bottom:20px;align-items:start;">
+    <div class="hg-row hg-main">
 
       <!-- Production History -->
       <div style="background:#fff;border-radius:10px;padding:22px 24px;box-shadow:var(--niond-shadow);">
@@ -472,7 +472,7 @@ function renderHome(){
     </div>
 
     <!-- ROW 3: Leaderboard (left) + Agents (right) -->
-    <div style="display:grid;grid-template-columns:1fr 268px;gap:14px;">
+    <div class="hg-row hg-bottom">
 
       <!-- Top Agents leaderboard -->
       <div style="background:#fff;border-radius:10px;padding:22px 24px;box-shadow:var(--niond-shadow);">
@@ -4740,22 +4740,8 @@ document.addEventListener('DOMContentLoaded', () => {
 function mobFixGrids() {
   if (window.innerWidth > 768) return;
 
-  // ── Home dashboard rows ──
-  document.querySelectorAll('#home-grid > div').forEach(row => {
-    const gc = row.style.gridTemplateColumns;
-    if (!gc) return;
-    if (/repeat\(4/.test(gc)) {
-      // Stat tiles: 2 cols
-      row.style.gridTemplateColumns = '1fr 1fr';
-      row.style.gap = '10px';
-    } else {
-      // All other rows (chart+links+cal, lb+agents): single col
-      row.style.gridTemplateColumns = '1fr';
-      row.style.gap = '12px';
-    }
-  });
-
   // ── Any remaining inline 3+ col or fixed-px grids across all tabs ──
+  // (home grid rows now handled purely by CSS via .hg-stats/.hg-main/.hg-bottom classes)
   // Scoped to tab content only, skips calendar day grid and form input rows
   document.querySelectorAll('.tab-content [style], .page-scroll [style], .home-scroll [style]').forEach(el => {
     const gc = el.style.gridTemplateColumns;

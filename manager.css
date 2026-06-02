@@ -1084,6 +1084,12 @@ select.wr-input{cursor:pointer;appearance:none;}
   line-height: 1.4;
 }
 
+/* ── Home grid rows — class-based so CSS media queries work cleanly ── */
+.hg-row { display: grid; gap: 14px; margin-bottom: 20px; }
+.hg-stats  { grid-template-columns: repeat(4, 1fr); }
+.hg-main   { grid-template-columns: 1fr 220px 260px; align-items: start; }
+.hg-bottom { grid-template-columns: 1fr 268px; }
+
 @media (max-width: 768px) {
 
   /* ── Base ── */
@@ -1136,26 +1142,14 @@ select.wr-input{cursor:pointer;appearance:none;}
      HOME DASHBOARD
   ═══════════════════════════════════════════════════ */
 
-  /* All home grid rows collapse to single column */
-  #home-grid > div {
-    grid-template-columns: 1fr !important;
-    gap: 14px !important;
-    margin-bottom: 20px !important;
-  }
-  /* Stat tiles stay 2 cols */
-  #home-grid > div[style*="repeat(4"] {
-    grid-template-columns: 1fr 1fr !important;
-    gap: 12px !important;
-    margin-bottom: 20px !important;
-  }
-  /* Stat tile padding */
-  #home-grid > div[style*="repeat(4"] > div {
-    padding: 16px !important;
-  }
-  /* Stat tile number size */
-  #home-grid > div[style*="repeat(4"] > div > div:nth-child(2) {
-    font-size: 26px !important;
-  }
+  /* ── Home grid rows — clean class-based overrides, no !important needed ── */
+  .hg-stats  { grid-template-columns: 1fr 1fr; gap: 12px; }
+  .hg-main   { grid-template-columns: 1fr; gap: 14px; }
+  .hg-bottom { grid-template-columns: 1fr; gap: 14px; }
+
+  /* Stat tile padding and font on mobile */
+  .hg-stats > div { padding: 16px !important; }
+  .hg-stats > div > div:nth-child(2) { font-size: 26px !important; }
 
   /* ═══════════════════════════════════════════════════
      STAT CARDS
