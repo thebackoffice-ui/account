@@ -1,0 +1,646 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Back Office — Admin</title>
+<script>/* Prevent dark mode FOUC — runs before CSS loads */(function(){var t=localStorage.getItem('tt_theme');if(t)document.documentElement.setAttribute('data-theme',t);})();</script>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="admin.css">
+</head>
+<body>
+
+<!-- Admin Login Screen -->
+<div id="admin-login-screen" class="admin-login-wrap">
+  <div class="admin-login-box">
+    <div class="admin-login-logo">THE BACK OFFICE <span>/ ADMIN</span></div>
+    <div class="admin-login-title">Admin Access</div>
+    <div class="admin-login-sub">Enter the admin password to continue</div>
+    <!-- Script URL field — shown when not yet configured -->
+    <div class="admin-login-field" id="login-url-field" style="display:none;">
+      <label class="admin-login-lbl">Apps Script URL</label>
+      <input type="text" id="login-script-url" class="admin-login-input" placeholder="https://script.google.com/macros/s/…/exec" />
+      <div style="font-size:11px;color:var(--muted);margin-top:4px;">Paste your deployed Apps Script URL — find it in the Setup tab after first login, or from Google Apps Script → Deploy.</div>
+    </div>
+    <div class="admin-login-field">
+      <label class="admin-login-lbl">Password</label>
+      <input type="password" id="admin-pw-input" class="admin-login-input" placeholder="Enter password…" onkeydown="if(event.key==='Enter')doAdminLogin()" autofocus />
+    </div>
+    <button class="admin-login-btn" onclick="doAdminLogin()">Sign in</button>
+    <div class="admin-login-err" id="admin-login-err" style="display:none;"></div>
+  </div>
+</div>
+
+<div id="admin-main-wrap">
+<header>
+  <span class="logo">THE BACK OFFICE <span>/ ADMIN</span></span>
+  <div class="header-right">
+    <div class="week-nav">
+      <button class="nav-btn" id="prev-week" onclick="changeWeek(-1)">‹</button>
+      <span class="week-label" id="week-display">—</span>
+      <button class="nav-btn" id="next-week" onclick="changeWeek(1)">›</button>
+    </div>
+    <button class="icon-btn" onclick="loadAll(true)">↻ Refresh</button>
+    <button class="theme-btn" onclick="toggleTheme()" id="theme-btn">🌙 Dark</button>
+  </div>
+</header>
+
+<main>
+  <div class="tabs">
+    <button class="tab-btn active" onclick="switchTab('overview')">Overview</button>
+    <button class="tab-btn" onclick="switchTab('people')">All People</button>
+    <button class="tab-btn" onclick="switchTab('upload')">Upload Reports</button>
+    <button class="tab-btn" onclick="switchTab('calendar')">Calendar</button>
+    <button class="tab-btn" onclick="switchTab('reviews')">Weekly Reviews</button>
+    <button class="tab-btn" onclick="switchTab('notifications')">Notifications</button>
+    <button class="tab-btn" onclick="switchTab('planner')">Planner Groups</button>
+    <button class="tab-btn" onclick="switchTab('clients')">Clients &amp; Campaigns</button>
+    <button class="tab-btn" onclick="switchTab('mgrprofiles')">Manager Profiles</button>
+    <button class="tab-btn" onclick="switchTab('setup')">Setup</button>
+    <button class="tab-btn" onclick="switchTab('audit')">Audit Log</button>
+  </div>
+
+  <!-- OVERVIEW -->
+  <div class="tab-panel active" id="tab-overview">
+    <div class="stats-bar">
+      <div class="stat-card"><div class="stat-lbl">Managers submitted</div><div class="stat-val" id="s-submitted">—</div><div class="stat-sub">this week</div></div>
+      <div class="stat-card"><div class="stat-lbl">Total headcount</div><div class="stat-val" id="s-headcount">—</div><div class="stat-sub">active this week</div></div>
+      <div class="stat-card"><div class="stat-lbl">Ever tracked</div><div class="stat-val" id="s-ever">—</div><div class="stat-sub">unique people</div></div>
+      <div class="stat-card"><div class="stat-lbl">Leavers</div><div class="stat-val" id="s-leavers">—</div><div class="stat-sub">marked this week</div></div>
+    </div>
+    <div class="chart-card" id="chart-card" style="display:none;">
+      <div class="chart-hdr">
+        <span class="chart-title">Submission rate — last 12 weeks</span>
+      </div>
+      <svg class="chart-svg" id="submission-chart" height="80"></svg>
+    </div>
+    <div class="submit-status-panel" id="submit-status-panel" style="display:none;"></div>
+    <div class="sec-hdr"><span class="sec-lbl">Teams this week</span></div>
+    <div class="teams-grid" id="teams-grid"><div class="loading-state"><span class="spinner"></span>Loading…</div></div>
+  </div>
+
+  <!-- ALL PEOPLE -->
+  <div class="tab-panel" id="tab-people">
+    <div class="sec-hdr">
+      <span class="sec-lbl">All people ever tracked</span>
+      <input class="search-input" id="people-search" type="text" placeholder="Search name, manager, email…" oninput="filterPeople()" />
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Name</th><th>Email</th><th>Manager</th><th>Position</th><th>First seen</th><th>Status</th><th></th></tr></thead>
+        <tbody id="people-tbody"><tr><td colspan="6" class="loading-state"><span class="spinner"></span>Loading…</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- UPLOAD -->
+  <div class="tab-panel" id="tab-upload">
+    <div class="setup-card">
+      <h3>Upload a report or link</h3>
+      <p>Paste a Google Sheets link, choose the type and week, then select which managers should see it. Saves to the sheet immediately.</p>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:4px;">
+        <div>
+          <div style="font-size:11px;font-weight:600;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;margin-bottom:6px;">Type</div>
+          <select id="ul-type" class="search-input" style="width:100%;" onchange="handleTypeChange()">
+            <option value="Pay Report">Pay Report</option>
+            <option value="Pro-log">Pro-log</option>
+          </select>
+        </div>
+        <div>
+          <div style="font-size:11px;font-weight:600;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;margin-bottom:6px;">Date (of report week)</div>
+          <input type="date" id="ul-week" class="search-input" style="width:100%;" />
+        </div>
+        <div id="ul-campaign-wrap">
+          <div style="font-size:11px;font-weight:600;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;margin-bottom:6px;">Campaign / Label</div>
+          <input type="text" id="ul-campaign" class="search-input" style="width:100%;" placeholder="e.g. SP Venues, SP Doors…" list="campaign-suggestions" />
+          <datalist id="campaign-suggestions"></datalist>
+        </div>
+        <div>
+          <div style="font-size:11px;font-weight:600;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;margin-bottom:6px;">Google Sheets URL</div>
+          <input type="url" id="ul-url" class="search-input" style="width:100%;" placeholder="https://docs.google.com/spreadsheets/…" />
+        </div>
+      </div>
+      <!-- Pay Report extra fields -->
+      <div id="ul-pay-fields" style="display:none;margin-top:14px;background:var(--surface2);border:1px solid var(--accent-border);border-radius:var(--radius);padding:16px;">
+        <div style="font-size:12px;font-weight:700;color:var(--accent);margin-bottom:12px;display:flex;align-items:center;gap:6px;">💰 Pay Report Production Data</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+          <div>
+            <div style="font-size:11px;font-weight:600;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;margin-bottom:6px;">Office Wire (Profit) £</div>
+            <input type="number" id="ul-office-wire" class="search-input" style="width:100%;" placeholder="e.g. 4250.00" min="0" step="0.01" />
+          </div>
+          <div>
+            <div style="font-size:11px;font-weight:600;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;margin-bottom:6px;">Manager's Take £</div>
+            <input type="number" id="ul-mgr-take" class="search-input" style="width:100%;" placeholder="e.g. 850.00" min="0" step="0.01" />
+          </div>
+        </div>
+        <div style="font-size:11px;color:var(--muted);margin-top:8px;">These figures will appear on the manager's Pay Reports tab so they can see their production breakdown.</div>
+      </div>
+      <div style="margin-top:14px;">
+        <div style="font-size:11px;font-weight:600;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;margin-bottom:8px;">Visible to managers</div>
+        <div id="ul-manager-checkboxes" style="display:flex;flex-wrap:wrap;gap:8px;"></div>
+      </div>
+      <button onclick="uploadReport()" style="margin-top:16px;background:var(--accent);border:none;color:#fff;font-family:var(--font);font-size:13px;font-weight:500;padding:10px 20px;border-radius:var(--radius-sm);cursor:pointer;transition:opacity .15s;" onmouseover="this.style.opacity='.85'" onmouseout="this.style.opacity='1'">Save report link</button>
+      <div id="ul-status" style="font-size:12px;color:var(--muted);margin-top:8px;font-family:monospace;"></div>
+    </div>
+    <div class="setup-card">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+        <h3 style="margin-bottom:0;">Uploaded reports</h3>
+        <button onclick="bulkDeleteOldReports(8)" style="background:none;border:1px solid var(--border2);color:var(--muted);font-family:var(--font);font-size:12px;padding:6px 12px;border-radius:var(--radius-sm);cursor:pointer;" onmouseover="this.style.color='var(--danger)';this.style.borderColor='var(--danger)'" onmouseout="this.style.color='var(--muted)';this.style.borderColor='var(--border2)'">Delete older than 8 weeks</button>
+      </div>
+      <p>All links you've uploaded. Click × to remove.</p>
+      <div id="ul-history" style="display:flex;flex-direction:column;gap:6px;">
+        <div style="color:var(--muted);font-size:13px;">Loading…</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CALENDAR -->
+  <div class="tab-panel" id="tab-calendar">
+
+    <div class="setup-card">
+      <h3>Push a calendar event</h3>
+      <p>Create an event and push it to one or more managers' calendars. Enable recurring to repeat it automatically — you can edit or remove individual occurrences any time.</p>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:4px;">
+        <div style="grid-column:span 2;">
+          <div class="form-lbl">Event title</div>
+          <input type="text" id="cal-title" class="search-input" style="width:100%;" placeholder="e.g. Team catch-up, Deadline: SP Venues…" />
+        </div>
+        <div>
+          <div class="form-lbl">Date</div>
+          <input type="date" id="cal-date" class="search-input" style="width:100%;" />
+        </div>
+        <div>
+          <div class="form-lbl">Time (optional)</div>
+          <input type="time" id="cal-time" class="search-input" style="width:100%;" />
+        </div>
+        <div style="grid-column:span 2;">
+          <div class="form-lbl">Notes (optional)</div>
+          <input type="text" id="cal-notes" class="search-input" style="width:100%;" placeholder="Any extra detail…" />
+        </div>
+        <div>
+          <div class="form-lbl">Colour</div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:4px;" id="cal-colour-picker">
+            <div class="cal-swatch selected" data-cat="personal" style="background:#2563ff;" title="Blue" onclick="selectCalColour(this,'personal')"></div>
+            <div class="cal-swatch" data-cat="work" style="background:#22c55e;" title="Green" onclick="selectCalColour(this,'work')"></div>
+            <div class="cal-swatch" data-cat="team" style="background:#ec4899;" title="Pink" onclick="selectCalColour(this,'team')"></div>
+            <div class="cal-swatch" data-cat="reminder" style="background:#f59e0b;" title="Yellow" onclick="selectCalColour(this,'reminder')"></div>
+            <div class="cal-swatch" data-cat="admin" style="background:#7c3aed;" title="Purple" onclick="selectCalColour(this,'admin')"></div>
+            <div class="cal-swatch" data-cat="orange" style="background:#f97316;" title="Orange" onclick="selectCalColour(this,'orange')"></div>
+            <div class="cal-swatch" data-cat="rose" style="background:#f43f5e;" title="Rose" onclick="selectCalColour(this,'rose')"></div>
+            <div class="cal-swatch" data-cat="cyan" style="background:#06b6d4;" title="Cyan" onclick="selectCalColour(this,'cyan')"></div>
+          </div>
+        </div>
+        <div>
+          <div class="form-lbl">Reminder / notification (optional)</div>
+          <input type="text" id="cal-reminder" class="search-input" style="width:100%;" placeholder="e.g. Don't forget to submit your weekly update" />
+        </div>
+        <!-- Recurrence -->
+        <div style="grid-column:span 2;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:14px;">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+            <input type="checkbox" id="cal-recurring" onchange="toggleRecurrence()" style="cursor:pointer;accent-color:var(--accent);" />
+            <label for="cal-recurring" style="font-size:13px;font-weight:500;cursor:pointer;">Recurring event</label>
+          </div>
+          <div id="recurrence-options" style="display:none;grid-template-columns:1fr 1fr;gap:10px;">
+            <div>
+              <div class="form-lbl">Repeat every</div>
+              <select id="cal-recur-freq" class="form-input">
+                <option value="weekly">Week</option>
+                <option value="biweekly">2 Weeks</option>
+                <option value="monthly">Month</option>
+              </select>
+            </div>
+            <div>
+              <div class="form-lbl">End after (occurrences)</div>
+              <input type="number" id="cal-recur-count" class="form-input" value="10" min="1" max="52" />
+            </div>
+          </div>
+        </div>
+      </div>
+      <div style="margin-top:14px;">
+        <div class="form-lbl" style="margin-bottom:8px;">Push to managers</div>
+        <div style="margin-bottom:8px;display:flex;gap:8px;">
+          <button onclick="calSelectAll()" style="background:none;border:1px solid var(--border2);color:var(--muted);font-family:var(--font);font-size:11px;padding:4px 10px;border-radius:20px;cursor:pointer;">Select all</button>
+          <button onclick="calSelectNone()" style="background:none;border:1px solid var(--border2);color:var(--muted);font-family:var(--font);font-size:11px;padding:4px 10px;border-radius:20px;cursor:pointer;">Clear</button>
+        </div>
+        <div id="cal-manager-checkboxes" style="display:flex;flex-wrap:wrap;gap:8px;"></div>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px;margin-top:16px;">
+        <button onclick="pushCalendarEvent()" style="background:var(--accent);border:none;color:#fff;font-family:var(--font);font-size:13px;font-weight:500;padding:10px 20px;border-radius:var(--radius-sm);cursor:pointer;transition:opacity .15s;" onmouseover="this.style.opacity='.85'" onmouseout="this.style.opacity='1'">Push event</button>
+        <div id="cal-status" style="font-size:12px;color:var(--muted);font-family:monospace;"></div>
+      </div>
+    </div>
+
+    <div class="setup-card">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+        <h3 style="margin-bottom:0;">Pushed events</h3>
+        <div style="display:flex;gap:8px;">
+          <button onclick="filterCalHistory('all')" id="cal-filter-all" style="background:var(--accent);border:none;color:#fff;font-family:var(--font);font-size:11px;padding:4px 12px;border-radius:20px;cursor:pointer;">All</button>
+          <button onclick="filterCalHistory('recurring')" id="cal-filter-recurring" style="background:none;border:1px solid var(--border2);color:var(--muted);font-family:var(--font);font-size:11px;padding:4px 12px;border-radius:20px;cursor:pointer;">Recurring</button>
+          <button onclick="filterCalHistory('once')" id="cal-filter-once" style="background:none;border:1px solid var(--border2);color:var(--muted);font-family:var(--font);font-size:11px;padding:4px 12px;border-radius:20px;cursor:pointer;">One-off</button>
+        </div>
+      </div>
+      <p>All events pushed to managers. Click Edit to adjust details or Remove to delete.</p>
+      <div id="cal-history" style="display:flex;flex-direction:column;gap:8px;">
+        <div class="loading-state"><span class="spinner"></span>Loading…</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- WEEKLY REVIEWS -->
+  <div class="tab-panel" id="tab-reviews">
+    <div class="setup-card" style="margin-bottom:16px;">
+      <h3>Review email recipients</h3>
+      <p>When a manager submits their weekly review, a PDF is emailed to these addresses. Add one per line or comma-separated.</p>
+      <textarea id="review-emails" class="form-input" style="min-height:80px;resize:vertical;" placeholder="admin@company.com&#10;director@company.com"></textarea>
+      <button onclick="saveReviewEmails()" style="margin-top:10px;background:var(--accent);border:none;color:#fff;font-family:var(--font);font-size:13px;font-weight:500;padding:9px 18px;border-radius:var(--radius-sm);cursor:pointer;transition:opacity .15s;" onmouseover="this.style.opacity='.85'" onmouseout="this.style.opacity='1'">Save emails</button>
+      <span id="review-emails-status" style="font-size:12px;color:var(--muted);margin-left:10px;font-family:monospace;"></span>
+    </div>
+
+    <div class="setup-card">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+        <h3 style="margin-bottom:0;">Submitted reviews</h3>
+        <div style="display:flex;gap:8px;align-items:center;">
+          <button onclick="exportAllReviewsCSV()" style="background:none;border:1px solid var(--border2);color:var(--muted);font-family:var(--font);font-size:12px;padding:6px 12px;border-radius:var(--radius-sm);cursor:pointer;" onmouseover="this.style.color='var(--text)'" onmouseout="this.style.color='var(--muted)'">⬇ Export CSV</button>
+          <select id="review-filter-manager" class="search-input" style="width:160px;" onchange="filterReviews()">
+            <option value="">All managers</option>
+          </select>
+          <select id="review-filter-week" class="search-input" style="width:180px;" onchange="filterReviews()">
+            <option value="">All weeks</option>
+          </select>
+        </div>
+      </div>
+      <p style="margin-bottom:14px;">Click a review to expand and read it.</p>
+      <div id="reviews-list">
+        <div style="color:var(--muted);font-size:13px;">No reviews stored yet.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- NOTIFICATIONS -->
+  <div class="tab-panel" id="tab-notifications">
+
+    <!-- Compose -->
+    <div class="setup-card">
+      <h3>Send a notification</h3>
+      <p>Send a message directly to one or more managers. It appears in their Notifications tab with a red badge until read.</p>
+
+      <!-- Template picker -->
+      <div style="margin-bottom:14px;">
+        <div class="form-lbl" style="margin-bottom:6px;">Load a template (optional)</div>
+        <div style="display:flex;gap:8px;">
+          <select id="notif-template-select" class="search-input" style="flex:1;" onchange="loadNotifTemplate()">
+            <option value="">— choose template —</option>
+          </select>
+          <button onclick="saveNotifTemplate()" style="background:none;border:1px solid var(--border2);color:var(--muted);font-family:var(--font);font-size:12px;font-weight:500;padding:7px 14px;border-radius:var(--radius-sm);cursor:pointer;white-space:nowrap;" onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--accent)'" onmouseout="this.style.borderColor='var(--border2)';this.style.color='var(--muted)'">Save as template</button>
+          <button onclick="deleteNotifTemplate()" style="background:none;border:1px solid var(--border2);color:var(--muted);font-family:var(--font);font-size:12px;padding:7px 10px;border-radius:var(--radius-sm);cursor:pointer;" title="Delete selected template" onmouseover="this.style.color='var(--danger)';this.style.borderColor='var(--danger)'" onmouseout="this.style.color='var(--muted)';this.style.borderColor='var(--border2)'">×</button>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <label class="form-lbl">Title</label>
+        <input type="text" id="notif-title" class="form-input" placeholder="e.g. Reminder: Submit your weekly update" />
+      </div>
+      <div class="form-row">
+        <label class="form-lbl">Message</label>
+        <textarea id="notif-message" class="form-input" style="min-height:80px;resize:vertical;" placeholder="Full message…"></textarea>
+      </div>
+      <div style="margin-top:12px;">
+        <div class="form-lbl" style="margin-bottom:8px;">Send to managers</div>
+        <div style="margin-bottom:8px;display:flex;gap:8px;">
+          <button onclick="notifSelectAll()" style="background:none;border:1px solid var(--border2);color:var(--muted);font-family:var(--font);font-size:11px;padding:4px 10px;border-radius:20px;cursor:pointer;">Select all</button>
+          <button onclick="notifSelectNone()" style="background:none;border:1px solid var(--border2);color:var(--muted);font-family:var(--font);font-size:11px;padding:4px 10px;border-radius:20px;cursor:pointer;">Clear</button>
+        </div>
+        <div id="notif-manager-checkboxes" style="display:flex;flex-wrap:wrap;gap:8px;"></div>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px;margin-top:16px;">
+        <button onclick="sendNotification()" style="background:var(--accent);border:none;color:#fff;font-family:var(--font);font-size:13px;font-weight:500;padding:10px 20px;border-radius:var(--radius-sm);cursor:pointer;transition:opacity .15s;" onmouseover="this.style.opacity='.85'" onmouseout="this.style.opacity='1'">Send notification</button>
+        <div id="notif-status" style="font-size:12px;color:var(--muted);font-family:monospace;"></div>
+      </div>
+    </div>
+
+    <!-- Live notifications -->
+    <div class="setup-card">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+        <h3 style="margin-bottom:0;">Live notifications</h3>
+        <div style="display:flex;gap:8px;align-items:center;">
+          <button onclick="bulkClearReadNotifs()" style="background:none;border:1px solid var(--border2);color:var(--muted);font-family:var(--font);font-size:12px;padding:6px 12px;border-radius:var(--radius-sm);cursor:pointer;white-space:nowrap;" onmouseover="this.style.color='var(--text)'" onmouseout="this.style.color='var(--muted)'">Clear read</button>
+          <button onclick="bulkClearMgrNotifs()" style="background:none;border:1px solid var(--border2);color:var(--muted);font-family:var(--font);font-size:12px;padding:6px 12px;border-radius:var(--radius-sm);cursor:pointer;white-space:nowrap;" onmouseover="this.style.color='var(--danger)';this.style.borderColor='var(--danger)'" onmouseout="this.style.color='var(--muted)';this.style.borderColor='var(--border2)'">Clear selected mgr</button>
+          <select id="notif-filter-mgr" class="search-input" style="width:160px;" onchange="renderLiveNotifs()">
+            <option value="">All managers</option>
+          </select>
+          <button onclick="refreshLiveNotifs()" style="background:none;border:1px solid var(--border2);color:var(--muted);font-family:var(--font);font-size:12px;padding:6px 12px;border-radius:var(--radius-sm);cursor:pointer;" onmouseover="this.style.color='var(--text)'" onmouseout="this.style.color='var(--muted)'">↻ Refresh</button>
+        </div>
+      </div>
+      <p>All unread and recent notifications. Click × to delete one from a manager's inbox.</p>
+      <div id="live-notifs-list" style="display:flex;flex-direction:column;gap:6px;">
+        <div style="color:var(--muted);font-size:13px;">Loading…</div>
+      </div>
+    </div>
+
+    <!-- Templates manager -->
+    <div class="setup-card">
+      <h3>Notification templates</h3>
+      <p>Saved templates appear in the dropdown above. Add one below — title + body — and save it for reuse.</p>
+      <div class="form-row">
+        <label class="form-lbl">Template name</label>
+        <input type="text" id="tmpl-name" class="form-input" placeholder="e.g. Weekly reminder" />
+      </div>
+      <div class="form-row">
+        <label class="form-lbl">Title</label>
+        <input type="text" id="tmpl-title" class="form-input" placeholder="Notification title" />
+      </div>
+      <div class="form-row">
+        <label class="form-lbl">Message</label>
+        <textarea id="tmpl-body" class="form-input" style="min-height:70px;resize:vertical;" placeholder="Notification message…"></textarea>
+      </div>
+      <button onclick="createNotifTemplate()" style="background:var(--accent);border:none;color:#fff;font-family:var(--font);font-size:13px;font-weight:500;padding:9px 18px;border-radius:var(--radius-sm);cursor:pointer;margin-top:8px;">Save template</button>
+      <div id="tmpl-status" style="font-size:12px;color:var(--muted);margin-left:10px;font-family:monospace;display:inline;"></div>
+    </div>
+
+  </div>
+
+  <!-- SETUP -->
+  <div class="tab-panel" id="tab-setup">
+
+    <div class="setup-card">
+      <h3>1. Connect Google Sheets</h3>
+      <p>All data saves to a Google Sheet via Apps Script. One-time setup — takes about 5 minutes.</p>
+      <div class="steps">
+        <div class="step"><span>Create a new <strong>Google Sheet</strong> (name it anything, e.g. "The Back Office")</span></div>
+        <div class="step"><span>In the sheet go to <strong>Extensions → Apps Script</strong></span></div>
+        <div class="step"><span>Delete existing code, paste in the <strong>Apps Script below</strong> (copy button top-right), and save</span></div>
+        <div class="step"><span>Click <strong>Deploy → New deployment → Web app</strong> · Set "Who has access" to <strong>Anyone</strong> · Deploy · copy the URL</span></div>
+        <div class="step"><span>In Apps Script go to <strong>Project Settings → Script Properties</strong> · Add property <code>TOKEN_SECRET</code> with a long random value (e.g. 40 random characters) — this secures admin tokens</span></div>
+        <div class="step"><span>Paste that URL into the field below and click <strong>Save URL</strong> — <code>manager.html</code> reads it automatically from the same browser storage</span></div>
+      </div>
+      <div class="url-row">
+        <input type="text" id="script-url-input" placeholder="https://script.google.com/macros/s/…/exec" />
+        <button class="save-btn" onclick="saveScriptUrl()">Save URL</button>
+      </div>
+      <div id="url-status" style="font-size:12px;color:var(--muted);margin-top:8px;font-family:monospace;"></div>
+    </div>
+
+    <div class="setup-card">
+      <h3>2. Connect Pay Reports</h3>
+      <p>The Rep Pay tab in <code>manager.html</code> reads pay data from your Google Sheet's <strong>Week Index</strong> tab. Paste the CSV URL for that tab below — managers will see their team's pay reports automatically once this is saved.</p>
+      <div class="steps">
+        <div class="step"><span>In your pay reports Sheet, open the <strong>Week Index</strong> tab</span></div>
+        <div class="step"><span>Copy the sheet ID from the URL bar — it's the long string between <code>/d/</code> and <code>/edit</code></span></div>
+        <div class="step"><span>Build the URL: <code>https://docs.google.com/spreadsheets/d/<strong>SHEET_ID</strong>/gviz/tq?tqx=out:csv&sheet=Week%20Index</code></span></div>
+        <div class="step"><span>Paste it below and click <strong>Save URL</strong></span></div>
+      </div>
+      <div class="url-row">
+        <input type="text" id="pay-index-url-input" placeholder="https://docs.google.com/spreadsheets/d/…/gviz/tq?tqx=out:csv&sheet=Week%20Index" />
+        <button class="save-btn" onclick="savePayIndexUrl()">Save URL</button>
+      </div>
+      <div id="pay-index-url-status" style="font-size:12px;color:var(--muted);margin-top:8px;font-family:monospace;"></div>
+    </div>
+
+    <div class="setup-card">
+      <h3>Apps Script code</h3>
+      <p>Copy this and paste into the Apps Script editor. <span id="apps-script-version-lbl" style="color:var(--accent);font-weight:600;"></span></p>
+      <div style="position:relative;">
+        <pre id="apps-script-pre"></pre>
+        <button class="copy-btn" style="position:absolute;top:10px;right:10px;" onclick="copyScript(this)">Copy</button>
+      </div>
+    </div>
+
+    <div class="setup-card">
+      <h3>Submission deadline reminder</h3>
+      <p>Automatically send a notification to managers who haven't submitted their weekly update by a set day/time. Clicking <strong>Save &amp; activate</strong> installs a server-side Apps Script trigger that runs daily at 8am — this is the reliable mechanism and works even when nobody has the admin panel open. The admin page also runs a fallback check on load as a backup.</p>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:4px;">
+        <div>
+          <div style="font-size:11px;font-weight:600;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;margin-bottom:6px;">Deadline day</div>
+          <select id="deadline-day" class="search-input" style="width:100%;">
+            <option value="">— disabled —</option>
+            <option value="1">Monday</option>
+            <option value="2">Tuesday</option>
+            <option value="3">Wednesday</option>
+            <option value="4">Thursday</option>
+            <option value="5">Friday</option>
+            <option value="6">Saturday</option>
+            <option value="0">Sunday</option>
+          </select>
+        </div>
+        <div>
+          <div style="font-size:11px;font-weight:600;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;margin-bottom:6px;">Deadline time</div>
+          <input type="time" id="deadline-time" class="search-input" style="width:100%;" value="17:00" />
+        </div>
+        <div style="grid-column:span 2;">
+          <div style="font-size:11px;font-weight:600;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;margin-bottom:6px;">Reminder message</div>
+          <input type="text" id="deadline-msg" class="search-input" style="width:100%;" placeholder="e.g. Reminder: Please submit your weekly update — deadline has passed." value="⏰ Reminder: Your weekly update is overdue. Please submit it now." />
+        </div>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:14px;align-items:center;">
+        <button onclick="saveDeadlineSettings()" style="background:var(--accent);border:none;color:#fff;font-family:var(--font);font-size:13px;font-weight:500;padding:9px 18px;border-radius:var(--radius-sm);cursor:pointer;">Save & activate</button>
+        <button onclick="runDeadlineCheckNow()" style="background:none;border:1px solid var(--border2);color:var(--muted);font-family:var(--font);font-size:13px;padding:9px 18px;border-radius:var(--radius-sm);cursor:pointer;" onmouseover="this.style.color='var(--text)'" onmouseout="this.style.color='var(--muted)'">Run check now</button>
+        <span id="deadline-status" style="font-size:12px;color:var(--muted);font-family:monospace;"></span>
+      </div>
+      <div id="deadline-last-run" style="font-size:11px;color:var(--muted);margin-top:8px;"></div>
+    </div>
+
+    <div class="setup-card">
+      <h3>Team announcement</h3>
+      <p>Post a message that appears as a banner on every manager's home screen. Clear it when done.</p>
+      <div style="display:flex;flex-direction:column;gap:8px;">
+        <input type="text" id="ann-title" class="search-input" style="width:100%;" placeholder="Title (e.g. Important update)" />
+        <textarea id="ann-message" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);font-family:var(--font);font-size:13px;padding:9px 13px;border-radius:8px;outline:none;width:100%;min-height:70px;resize:vertical;" placeholder="Message…"></textarea>
+        <div style="display:flex;gap:8px;">
+          <button onclick="postAnnouncement()" style="background:var(--accent);border:none;color:#fff;font-family:var(--font);font-size:13px;font-weight:500;padding:9px 18px;border-radius:8px;cursor:pointer;">Post announcement</button>
+          <button onclick="clearAnnouncement()" style="background:none;border:1px solid var(--border2);color:var(--muted);font-family:var(--font);font-size:13px;padding:9px 18px;border-radius:8px;cursor:pointer;">Clear announcement</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="setup-card">
+      <h3>2. Manager links & settings</h3>
+      <p>Add a manager's first name to generate their unique link. You can also set passwords and upload profile pictures here.</p>
+      <div class="link-list" id="link-list"><div style="color:var(--muted);font-size:13px;">No managers added yet.</div></div>
+      <div class="add-row">
+        <input class="add-input" id="new-mgr" type="text" placeholder="First name (e.g. sarah)" onkeydown="if(event.key==='Enter')addManager()" />
+        <button class="add-btn" onclick="addManager()">Add manager</button>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="tab-panel" id="tab-planner">
+    <div class="setup-card">
+      <h3>Planner Groups</h3>
+      <p>Assign managers into groups. Every manager in the same group edits a single shared daily planner together — changes are synced live. Managers not in any group get their own private planner.</p>
+      <div id="pg-groups-list" style="display:flex;flex-direction:column;gap:12px;margin-bottom:16px;"></div>
+      <button onclick="pgAddGroup()" style="background:var(--accent);border:none;color:#fff;font-family:var(--font);font-size:13px;font-weight:600;padding:9px 18px;border-radius:var(--radius-sm);cursor:pointer;">+ New group</button>
+    </div>
+    <div class="setup-card" style="margin-top:16px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+        <h3 style="margin:0;">Unassigned managers</h3>
+        <span style="font-size:12px;color:var(--muted);">These managers have their own private planner</span>
+      </div>
+      <div id="pg-unassigned" style="display:flex;flex-wrap:wrap;gap:8px;"></div>
+    </div>
+  </div>
+
+  <div class="tab-panel" id="tab-audit">
+    <div class="setup-card">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+        <h3 style="margin-bottom:0;">Audit log</h3>
+        <button onclick="loadAuditLog()" style="background:none;border:1px solid var(--border2);color:var(--muted);font-family:var(--font);font-size:12px;padding:6px 12px;border-radius:var(--radius-sm);cursor:pointer;" onmouseover="this.style.color='var(--text)'" onmouseout="this.style.color='var(--muted)'">↻ Refresh</button>
+      </div>
+      <p>Last 200 admin actions — manager additions, deletions, password resets, notifications sent, reports uploaded/deleted.</p>
+      <div id="audit-log-list" style="margin-top:12px;display:flex;flex-direction:column;gap:4px;">
+        <div style="color:var(--muted);font-size:13px;">Click Refresh to load.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CLIENTS & CAMPAIGNS -->
+  <div class="tab-panel" id="tab-clients">
+
+    <div class="setup-card">
+      <h3>Register a new client</h3>
+      <p>Add a client with a campaign type (Doors or Venues). The combined name (e.g. <strong>Scottish Power Doors</strong>) is used when assigning to managers.</p>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:4px;">
+        <div>
+          <div class="form-lbl" style="margin-bottom:5px;">Client name</div>
+          <input type="text" id="cl-client-name" class="form-input" placeholder="e.g. Scottish Power" />
+        </div>
+        <div>
+          <div class="form-lbl" style="margin-bottom:5px;">Campaign type</div>
+          <select id="cl-campaign-type" class="form-input">
+            <option value="Doors">Doors</option>
+            <option value="Venues">Venues</option>
+          </select>
+        </div>
+        <div style="grid-column:span 2;">
+          <div class="form-lbl" style="margin-bottom:5px;">Logo</div>
+          <div style="display:flex;align-items:center;gap:12px;">
+            <div id="cl-logo-preview" style="width:56px;height:56px;border-radius:8px;background:var(--surface2);border:1px dashed var(--border2);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;">🏢</div>
+            <label style="cursor:pointer;background:var(--surface);border:1px dashed var(--border2);color:var(--muted);font-size:12px;font-weight:500;padding:7px 14px;border-radius:var(--radius-sm);transition:all .15s;display:inline-flex;align-items:center;gap:6px;" onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--accent)'" onmouseout="this.style.borderColor='var(--border2)';this.style.color='var(--muted)'">
+              🖼 Upload logo
+              <input type="file" accept="image/*" onchange="clPreviewLogo(this)" style="display:none;" id="cl-logo-input" />
+            </label>
+            <span id="cl-logo-name" style="font-size:11px;color:var(--muted);"></span>
+          </div>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px;margin-top:14px;">
+        <button onclick="clSaveClient()" style="background:var(--accent);border:none;color:#fff;font-family:var(--font);font-size:13px;font-weight:500;padding:9px 20px;border-radius:var(--radius-sm);cursor:pointer;transition:opacity .15s;" onmouseover="this.style.opacity='.85'" onmouseout="this.style.opacity='1'">Save client</button>
+        <span id="cl-save-status" style="font-size:12px;color:var(--muted);font-family:monospace;"></span>
+      </div>
+    </div>
+
+    <div class="setup-card">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+        <h3 style="margin-bottom:0;">Registered clients</h3>
+        <button onclick="clLoadClients()" style="background:none;border:1px solid var(--border2);color:var(--muted);font-family:var(--font);font-size:12px;padding:6px 12px;border-radius:var(--radius-sm);cursor:pointer;" onmouseover="this.style.color='var(--text)'" onmouseout="this.style.color='var(--muted)'">↻ Refresh</button>
+      </div>
+      <p>All registered clients. Click × to remove (does not unassign from managers).</p>
+      <div id="cl-client-list" style="display:flex;flex-direction:column;gap:8px;margin-top:8px;">
+        <div style="color:var(--muted);font-size:13px;">Loading…</div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- MANAGER PROFILES -->
+  <div class="tab-panel" id="tab-mgrprofiles">
+
+    <div class="setup-card">
+      <h3>Manager profiles</h3>
+      <p>Set city location, campaign assignments, phone number, start date, weekly target, and a bio for each manager. Managers can also view and edit this from their own dashboard.</p>
+      <div id="mgr-profiles-list" style="display:flex;flex-direction:column;gap:16px;margin-top:8px;">
+        <div style="color:var(--muted);font-size:13px;"><span class="spinner"></span> Loading…</div>
+      </div>
+    </div>
+
+  </div>
+
+</main>
+
+</div><!-- /admin-main-wrap -->
+
+<div class="toast" id="toast"></div>
+
+<!-- Edit person modal -->
+<div class="modal-overlay" id="edit-person-modal">
+  <div class="modal">
+    <h3>Edit person</h3>
+    <div class="form-row">
+      <label class="form-lbl">Name</label>
+      <input type="text" id="ep-name" class="form-input" />
+    </div>
+    <div class="form-row">
+      <label class="form-lbl">Email</label>
+      <input type="text" id="ep-email" class="form-input" />
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+      <div class="form-row">
+        <label class="form-lbl">Manager</label>
+        <select id="ep-manager" class="form-input"></select>
+      </div>
+      <div class="form-row">
+        <label class="form-lbl">Position</label>
+        <select id="ep-position" class="form-input">
+          <option value="">—</option>
+          <option value="Trainee">Trainee</option>
+          <option value="Junior">Junior</option>
+          <option value="Solo">Solo</option>
+          <option value="Leader">Leader</option>
+          <option value="Core">Core</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row" style="display:flex;align-items:center;gap:8px;margin-top:4px;">
+      <input type="checkbox" id="ep-leaver" style="cursor:pointer;accent-color:var(--accent);" />
+      <label for="ep-leaver" style="font-size:13px;cursor:pointer;">Mark as leaver</label>
+    </div>
+    <div class="modal-btns">
+      <button class="modal-cancel" onclick="closePersonEdit()">Cancel</button>
+      <button class="modal-save" onclick="savePersonEdit()">Save changes</button>
+    </div>
+  </div>
+</div>
+
+<!-- Edit event modal -->
+<div class="modal-overlay" id="edit-event-modal">
+  <div class="modal">
+    <h3>Edit event</h3>
+    <input type="hidden" id="edit-event-id" />
+    <div class="form-row">
+      <label class="form-lbl">Title</label>
+      <input type="text" id="edit-event-title" class="form-input" />
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+      <div class="form-row">
+        <label class="form-lbl">Date</label>
+        <input type="date" id="edit-event-date" class="form-input" />
+      </div>
+      <div class="form-row">
+        <label class="form-lbl">Time</label>
+        <input type="time" id="edit-event-time" class="form-input" />
+      </div>
+    </div>
+    <div class="form-row">
+      <label class="form-lbl">Notes</label>
+      <input type="text" id="edit-event-notes" class="form-input" />
+    </div>
+    <!-- Shown only for recurring events -->
+    <div id="edit-scope-wrap" style="display:none;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:10px 14px;margin-bottom:4px;">
+      <div style="font-size:11px;font-weight:600;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;margin-bottom:8px;">This is a recurring event</div>
+      <label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer;margin-bottom:6px;">
+        <input type="radio" name="edit-scope" value="one" checked style="accent-color:var(--accent);cursor:pointer;" /> Edit only this occurrence
+      </label>
+      <label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer;">
+        <input type="radio" name="edit-scope" value="series" style="accent-color:var(--accent);cursor:pointer;" /> Edit all occurrences in this series
+      </label>
+    </div>
+    <div class="modal-btns">
+      <button class="modal-cancel" onclick="closeEditModal()">Cancel</button>
+      <button class="modal-save" onclick="saveEditedEvent()">Save changes</button>
+    </div>
+  </div>
+</div>
+
+<script src="admin.js"></script>
+</body>
+</html>

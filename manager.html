@@ -1,0 +1,733 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Back Office</title>
+<script>/* Prevent dark mode FOUC */(function(){var t=localStorage.getItem('tt_theme');if(t)document.documentElement.setAttribute('data-theme',t);})();</script>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<link rel="stylesheet" href="manager.css">
+
+</head>
+<body>
+
+
+<!-- LOGIN -->
+<div id="login-screen" class="login-wrap">
+  <div class="login-box">
+    <div class="login-logo">The <span>Back Office</span></div>
+    <div class="login-title">Welcome back 👋</div>
+    <div class="login-sub" id="login-sub">Sign in to your dashboard</div>
+    <div class="login-field">
+      <label class="login-label">Password</label>
+      <input class="login-input" id="login-pw" type="password" placeholder="Enter your password" />
+    </div>
+    <button class="login-btn" id="login-btn">Sign in</button>
+    <div class="login-err" id="login-err">Incorrect password. Please try again.</div>
+  </div>
+</div>
+
+<!-- MOBILE SIDEBAR OVERLAY -->
+<div class="mob-sidebar-overlay" id="mob-sidebar-overlay" onclick="closeMobileSidebar()"></div>
+
+<!-- APP -->
+<div id="app-shell" class="app-shell" style="display:none;">
+  <!-- Sidebar -->
+  <nav class="sidebar">
+    <div class="sidebar-header"><span class="sidebar-logo">The <span>Back Office</span></span></div>
+    <div class="sidebar-mgr">
+      <div class="profile-upload-wrap">
+        <div class="sidebar-avatar" id="sb-avatar">?</div>
+        <label class="profile-upload-btn" title="Upload profile picture" for="profile-pic-input">✎</label>
+        <input type="file" id="profile-pic-input" accept="image/*" style="display:none;" onchange="handleProfilePic(this)"/>
+      </div>
+      <div class="sidebar-name" id="sb-name">—</div>
+      <div class="sidebar-week" id="sb-week">—</div>
+      <div id="sb-city" style="font-size:10px;color:var(--muted);margin-top:1px;display:none;"></div>
+      <div id="sb-campaigns" style="display:flex;flex-wrap:wrap;gap:3px;margin-top:4px;justify-content:center;"></div>
+    </div>
+    <div class="sidebar-nav">
+
+      <!-- Home -->
+      <button class="nav-item active" onclick="switchTab('home')" id="nav-home"><span class="nav-icon"><svg width="15" height="15" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 9.5L10 3l7 6.5V18a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1z" stroke-linejoin="round"/><path d="M7 19V12h6v7" stroke-linejoin="round"/></svg></span>Home</button>
+
+      <div class="nav-group-label"></div>
+      <button class="nav-item" onclick="switchTab('reps')" id="nav-reps"><span class="nav-icon"><svg width="15" height="15" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M13 7a3 3 0 1 1-6 0 3 3 0 0 1 6 0"/><path d="M4 17a7 7 0 0 1 12 0" stroke-linecap="round"/></svg></span>My Reps</button>
+      <button class="nav-item" onclick="switchTab('payrep')" id="nav-payrep"><span class="nav-icon"><svg width="15" height="15" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="2" y="5" width="16" height="12" rx="2"/><path d="M14 11a2 2 0 1 1-4 0 2 2 0 0 1 4 0zM2 9h16" stroke-linecap="round"/></svg></span>Rep Pay</button>
+      <button class="nav-item" onclick="switchTab('leaderboard')" id="nav-leaderboard"><span class="nav-icon"><svg width="15" height="15" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M7 3h6M10 15v3M7 18h6"/><path d="M5 3v5a5 5 0 0 0 10 0V3"/><path d="M5 6H3a2 2 0 1 0 0 4h2M15 6h2a2 2 0 1 0 0 4h-2" stroke-linecap="round"/></svg></span>Leaderboard</button>
+      <button class="nav-item" onclick="switchTab('map')" id="nav-map"><span class="nav-icon"><svg width="15" height="15" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M1 4l6 2 6-2 6 2v13l-6-2-6 2-6-2z" stroke-linejoin="round"/><path d="M7 6v13M13 4v13" stroke-linecap="round"/></svg></span>Team Map</button>
+
+      <div class="nav-group-label"></div>
+      <button class="nav-item" onclick="switchTab('weekly')" id="nav-weekly"><span class="nav-icon"><svg width="15" height="15" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="4" y="3" width="12" height="15" rx="2"/><path d="M8 7h4M8 10h4M8 13h2" stroke-linecap="round"/></svg></span>Weekly Update<span id="weekly-badge" class="nav-badge" style="display:none;">!</span></button>
+      <button class="nav-item" onclick="switchTab('review')" id="nav-review"><span class="nav-icon"><svg width="15" height="15" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M14 3H6a1 1 0 0 0-1 1v13l5-3 5 3V4a1 1 0 0 0-1-1z" stroke-linejoin="round"/></svg></span>Weekly Review</button>
+      <button class="nav-item" onclick="switchTab('events')" id="nav-events"><span class="nav-icon"><svg width="15" height="15" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="10" cy="10" r="7"/><path d="M10 7v3l2 2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>Event Planner</button>
+      <button class="nav-item" onclick="switchTab('planner')" id="nav-planner"><span class="nav-icon"><svg width="15" height="15" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="3" width="14" height="14" rx="2"/><path d="M3 8h14M8 8v9" stroke-linecap="round"/></svg></span>Daily Planner</button>
+
+      <div class="nav-group-label"></div>
+      <button class="nav-item" onclick="switchTab('calendar')" id="nav-calendar"><span class="nav-icon"><svg width="15" height="15" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="5" width="14" height="13" rx="2"/><path d="M3 9h14M7 3v4M13 3v4" stroke-linecap="round"/></svg></span>Calendar</button>
+      <button class="nav-item" onclick="switchTab('notes')" id="nav-notes"><span class="nav-icon"><svg width="15" height="15" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M5 3h10a1 1 0 0 1 1 1v10l-4 4H5a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z" stroke-linejoin="round"/><path d="M7 8h6M7 11h4" stroke-linecap="round"/></svg></span>Notes</button>
+
+      <div class="nav-group-label"></div>
+      <button class="nav-item" onclick="switchTab('reports')" id="nav-reports"><span class="nav-icon"><svg width="15" height="15" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="11" width="3" height="6" rx="1"/><rect x="8.5" y="7" width="3" height="10" rx="1"/><rect x="14" y="3" width="3" height="14" rx="1"/></svg></span>Reports</button>
+      <button class="nav-item" onclick="switchTab('notifications')" id="nav-notifications"><span class="nav-icon"><svg width="15" height="15" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M10 2a6 6 0 0 1 6 6c0 3.5 1.5 5 1.5 5h-15S4 11.5 4 8a6 6 0 0 1 6-6z" stroke-linejoin="round"/><path d="M8.5 17a1.5 1.5 0 0 0 3 0" stroke-linecap="round"/></svg></span>Notifications<span id="notif-badge" class="nav-badge" style="display:none;">0</span></button>
+      <button class="nav-item" onclick="switchTab('profile')" id="nav-profile"><span class="nav-icon"><svg width="15" height="15" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="10" cy="7" r="3"/><path d="M4 17a7 7 0 0 1 12 0" stroke-linecap="round"/></svg></span>My Profile</button>
+    </div>
+    <div class="sidebar-footer">
+      <button class="theme-toggle" onclick="toggleTheme()"><svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M17 13A7 7 0 1 1 7 3a5 5 0 0 0 10 10z" stroke-linejoin="round"/></svg><span id="theme-lbl">Dark mode</span></button>
+    </div>
+  </nav>
+
+  <!-- Content -->
+  <div class="content-area">
+
+    <!-- HOME -->
+    <div class="tab-content active" id="ptab-home">
+      <div class="topbar"><button class="mob-menu-btn" onclick="openMobileSidebar()" aria-label="Menu"><svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 5h14M3 10h14M3 15h14" stroke-linecap="round"/></svg></button><span class="topbar-title" id="home-greeting">Dashboard</span><div class="topbar-right"><span class="week-pill" id="week-pill">—</span></div></div>
+      <div class="home-scroll">
+        <div id="announcement-slot"></div>
+        <div id="home-grid"></div>
+      </div>
+    </div>
+
+    <!-- MY REPS -->
+    <div class="tab-content" id="ptab-reps">
+      <div class="topbar"><button class="mob-menu-btn" onclick="openMobileSidebar()" aria-label="Menu"><svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 5h14M3 10h14M3 15h14" stroke-linecap="round"/></svg></button><span class="topbar-title">My Reps</span></div>
+      <div class="page-scroll"><div class="page-wrap">
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:14px 16px;margin-bottom:20px;box-shadow:var(--niond-shadow);">
+          <div class="sec-lbl" style="margin-bottom:12px;">Add new rep</div>
+          <div class="rep-fields" style="margin-bottom:12px;">
+            <div class="field-group"><label class="field-lbl">Full name <span style="color:var(--danger)">*</span></label><input class="field-input" id="add-rep-name" type="text" placeholder="Full name…" onkeydown="if(event.key==='Enter')addRep()"/></div>
+            <div class="field-group"><label class="field-lbl">Email</label><input class="field-input" id="add-rep-email" type="email" placeholder="email@example.com"/></div>
+            <div class="field-group"><label class="field-lbl">Position</label>
+              <select class="field-input" id="add-rep-position">
+                <option value="">Select position…</option>
+              </select>
+            </div>
+            <div class="field-group"><label class="field-lbl">Reports to</label>
+              <select class="field-input" id="add-rep-leader">
+                <option value="">Not assigned</option>
+              </select>
+            </div>
+          </div>
+          <button class="add-btn" style="width:100%;padding:10px;" onclick="addRep()">Add rep</button>
+        </div>
+        <div style="position:relative;margin-bottom:14px;">
+          <svg style="position:absolute;left:11px;top:50%;transform:translateY(-50%);color:var(--subtle);pointer-events:none;" width="14" height="14" viewBox="0 0 16 16" fill="none"><circle cx="6" cy="6" r="4.5" stroke="currentColor" stroke-width="1.5"/><path d="M9.5 9.5L12 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+          <input id="rep-search" type="text" placeholder="Search by name or position…" oninput="filterReps()" style="width:100%;background:var(--surface);border:1px solid var(--border);color:var(--text);font-family:var(--font);font-size:13px;padding:9px 12px 9px 34px;border-radius:var(--r);outline:none;transition:border-color .15s;" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'"/>
+        </div>
+        <div class="rep-filter-pills" id="rep-filter-pills"></div>
+        <div class="sec-lbl" style="margin-bottom:10px;">Team roster</div>
+        <div class="rep-list" id="rep-list"><div class="empty-state"><strong>No reps yet</strong>Add your first rep above.</div></div>
+      </div></div>
+    </div>
+
+    <!-- WEEKLY UPDATE -->
+    <div class="tab-content" id="ptab-weekly">
+      <div class="topbar"><button class="mob-menu-btn" onclick="openMobileSidebar()" aria-label="Menu"><svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 5h14M3 10h14M3 15h14" stroke-linecap="round"/></svg></button><span class="topbar-title">Weekly Update</span><div class="topbar-right"><span class="week-pill" id="week-pill2">—</span></div></div>
+      <div class="page-scroll"><div class="page-wrap">
+        <div id="banner-done" class="banner-ok" style="display:none;"><strong>✓ Submitted this week</strong>You can update and resubmit any time.</div>
+        <div class="weekly-update-desc">
+          <div class="wud-icon">👥</div>
+          <div class="wud-body">
+            <div class="wud-title">Review your team for this week</div>
+            <div class="wud-text">Check everyone below is correct. Mark leavers, flag any promotions, then submit.</div>
+          </div>
+        </div>
+        <div id="wk-headcount-bar" class="wk-headcount-bar" style="display:none;"></div>
+        <div class="sec-lbl">Your team this week</div>
+        <div class="week-list" id="week-list"><div class="empty-state"><strong>No reps yet</strong>Add reps on My Reps first.</div></div>
+        <div class="submit-wrap"><button class="submit-btn" id="submit-btn" onclick="submitWeek()">Submit team for this week</button></div>
+      </div></div>
+    </div>
+
+    <!-- REPORTS -->
+    <div class="tab-content" id="ptab-reports">
+      <div class="topbar"><button class="mob-menu-btn" onclick="openMobileSidebar()" aria-label="Menu"><svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 5h14M3 10h14M3 15h14" stroke-linecap="round"/></svg></button>
+        <span class="topbar-title">Reports</span>
+        <div class="topbar-right">
+          <div class="rpt-search-wrap">
+            <svg class="rpt-search-icon" width="13" height="13" viewBox="0 0 16 16" fill="none"><circle cx="6" cy="6" r="4.5" stroke="currentColor" stroke-width="1.5"/><path d="M9.5 9.5L12 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+            <input id="rpt-search" class="rpt-search-input" type="text" placeholder="Search by month or date…" oninput="filterReports()"/>
+          </div>
+        </div>
+      </div>
+      <div class="page-scroll"><div class="page-wrap">
+
+        <!-- Pay trend chart — always visible at top of reports -->
+        <div class="ptc-card" style="margin-bottom:20px;">
+          <div class="ptc-card-hdr">
+            <div>
+              <div class="ptc-card-title">Pay Trend</div>
+              <div class="ptc-card-sub" id="rpt-ptc-sub">Office Wire vs Manager's Take</div>
+            </div>
+            <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;">
+              <div class="ptc-legend">
+                <div class="ptc-leg"><div class="ptc-leg-dot" style="background:#5C9DFF;"></div>Wire</div>
+                <div class="ptc-leg"><div class="ptc-leg-dot" style="background:#26C6B0;"></div>Take</div>
+              </div>
+              <div class="ptc-range-pills" id="rpt-ptc-pills">
+                <button class="ptc-rpill active" onclick="rptPtcSetRange(this,6)">6w</button>
+                <button class="ptc-rpill" onclick="rptPtcSetRange(this,12)">12w</button>
+                <button class="ptc-rpill" onclick="rptPtcSetRange(this,0)">All</button>
+              </div>
+            </div>
+          </div>
+          <div class="ptc-chart-wrap" style="height:280px;">
+            <canvas id="rpt-ptc-canvas" class="ptc-canvas" style="height:100%;"></canvas>
+          </div>
+
+        </div>
+
+        <div class="report-tabs">
+          <button class="rtab-btn active" onclick="switchReportTab('pay')">💰 Pay Reports</button>
+          <button class="rtab-btn" onclick="switchReportTab('prolog')">📋 Pro-logs</button>
+        </div>
+        <div class="rtab-panel active" id="rtab-pay">
+          <div id="pay-summary-strip"></div>
+          <div id="pay-reports-list"></div>
+        </div>
+        <div class="rtab-panel" id="rtab-prolog">
+          <div id="prolog-summary-strip"></div>
+          <div id="prolog-reports-list"></div>
+        </div>
+      </div></div>
+    </div>
+
+    <!-- WEEKLY REVIEW -->
+    <div class="tab-content" id="ptab-review">
+      <div class="topbar"><button class="mob-menu-btn" onclick="openMobileSidebar()" aria-label="Menu"><svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 5h14M3 10h14M3 15h14" stroke-linecap="round"/></svg></button>
+        <span class="topbar-title">Weekly Review</span>
+        <div class="topbar-right">
+          <button onclick="showReviewForm()" style="background:var(--accent);border:none;color:#fff;font-family:var(--font);font-size:12px;font-weight:600;padding:7px 14px;border-radius:var(--rsm);cursor:pointer;" id="new-review-btn">+ New Review</button>
+          <button onclick="showPastReviews()" style="background:none;border:1px solid var(--border2);color:var(--muted);font-family:var(--font);font-size:12px;font-weight:500;padding:7px 14px;border-radius:var(--rsm);cursor:pointer;" id="past-reviews-btn">Past Reviews</button>
+        </div>
+      </div>
+      <!-- Past reviews list -->
+      <div id="review-past-view" style="display:none;" class="page-scroll"><div class="page-wrap">
+        <div class="sec-lbl" style="margin-bottom:14px;">Saved reviews</div>
+        <div id="past-reviews-list"></div>
+      </div></div>
+      <!-- Review form -->
+      <div id="review-form-view" class="page-scroll"><div class="page-wrap" id="review-form-wrap">
+        <!-- dynamically rendered -->
+      </div></div>
+    </div>
+
+    <!-- CALENDAR -->
+    <div class="tab-content" id="ptab-calendar">
+      <div class="topbar"><button class="mob-menu-btn" onclick="openMobileSidebar()" aria-label="Menu"><svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 5h14M3 10h14M3 15h14" stroke-linecap="round"/></svg></button>
+        <div class="topbar-title-block">
+          <span class="topbar-title">Calendar</span>
+          <span class="topbar-sub" id="cal-topbar-sub">—</span>
+        </div>
+        <div class="topbar-right">
+          <button onclick="calToday()" class="pill-btn soft">Today</button>
+        </div>
+      </div>
+      <div class="cal-layout">
+
+        <!-- LEFT SIDEBAR -->
+        <div class="cal-sidebar">
+
+          <!-- Mini calendar -->
+          <div class="mini-cal-card">
+            <div class="mini-cal-hdr">
+              <span class="mini-cal-month-lbl" id="mini-cal-lbl">—</span>
+              <div class="mini-cal-nav">
+                <button class="mini-cal-nav-btn" onclick="calPrev()">‹</button>
+                <button class="mini-cal-nav-btn" onclick="calNext()">›</button>
+              </div>
+            </div>
+            <div class="mini-grid" id="mini-cal-grid"></div>
+          </div>
+
+          <!-- Today's / selected day events -->
+          <div class="events-card">
+            <div class="events-card-title" id="events-card-title">Today's Events</div>
+            <div class="events-card-date" id="events-card-date">—</div>
+            <div class="events-list" id="events-list">
+              <div class="event-list-empty">No events</div>
+            </div>
+            <button onclick="openNewEvent(selectedDay||fmtDate(new Date()))" style="margin-top:12px;width:100%;background:#0f766e;border:none;color:#fff;font-family:var(--font);font-size:12px;font-weight:700;padding:9px;border-radius:8px;cursor:pointer;transition:opacity .15s;letter-spacing:.03em;" onmouseover="this.style.opacity='.82'" onmouseout="this.style.opacity='1'">+ Add Event</button>
+          </div>
+
+        </div>
+
+        <!-- MAIN CALENDAR CARD -->
+        <div class="cal-main">
+          <div class="cal-main-hdr">
+            <div class="cal-main-month" id="cal-month-lbl">—</div>
+            <div class="cal-main-nav">
+              <button class="cal-nav-btn" onclick="calPrev()">‹</button>
+              <button class="cal-nav-btn" onclick="calNext()">›</button>
+            </div>
+          </div>
+          <div class="cal-grid-wrap">
+            <div class="cal-grid" id="cal-grid"></div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- LEADERBOARD -->
+    <div class="tab-content" id="ptab-leaderboard">
+      <div class="topbar"><button class="mob-menu-btn" onclick="openMobileSidebar()" aria-label="Menu"><svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 5h14M3 10h14M3 15h14" stroke-linecap="round"/></svg></button><span class="topbar-title">Leaderboard</span><div class="topbar-right"><span class="week-pill" id="lb-week-pill">—</span></div></div>
+      <div class="lb2-scroll">
+
+        <!-- Controls: view switcher + search + campaign pills -->
+        <div class="lb2-controls">
+          <div class="lb2-view-group">
+            <button class="lb-view-btn active" data-view="Week Total" onclick="lbSetView(this,'Week Total')">Week</button>
+            <button class="lb-view-btn" data-view="Mon" onclick="lbSetView(this,'Mon')">Mon</button>
+            <button class="lb-view-btn" data-view="Tue" onclick="lbSetView(this,'Tue')">Tue</button>
+            <button class="lb-view-btn" data-view="Wed" onclick="lbSetView(this,'Wed')">Wed</button>
+            <button class="lb-view-btn" data-view="Thu" onclick="lbSetView(this,'Thu')">Thu</button>
+            <button class="lb-view-btn" data-view="Fri" onclick="lbSetView(this,'Fri')">Fri</button>
+            <button class="lb-view-btn" data-view="Sat" onclick="lbSetView(this,'Sat')">Sat</button>
+          </div>
+          <div class="lb2-search-wrap">
+            <svg class="lb2-search-ico" width="14" height="14" viewBox="0 0 16 16" fill="none"><circle cx="6" cy="6" r="4.5" stroke="currentColor" stroke-width="1.5"/><path d="M9.5 9.5L12 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+            <input id="lb-search" class="lb2-search" type="text" placeholder="Search agent or campaign…" oninput="lbRender()" />
+          </div>
+          <div class="lb2-camp-pills" id="lb-campaign-pills"></div>
+        </div>
+
+
+        <!-- Podium -->
+        <div id="lb-podium-wrap"></div>
+
+        <!-- Full list -->
+        <div id="lb-list"></div>
+
+      </div>
+    </div>
+
+    <!-- MAP -->
+    <div class="tab-content" id="ptab-map">
+      <div class="topbar"><button class="mob-menu-btn" onclick="openMobileSidebar()" aria-label="Menu"><svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 5h14M3 10h14M3 15h14" stroke-linecap="round"/></svg></button><span class="topbar-title">Team Map</span></div>
+      <div class="map-wrap">
+        <div class="map-toolbar">
+          <button class="tb-btn" onclick="rebuildMap()">↺ Rebuild</button>
+          <button class="tb-btn" onclick="saveMap()">Save layout</button>
+          <button class="tb-btn red" onclick="clearMap()">Clear</button>
+          <button class="tb-btn" onclick="resetZoom()">Reset view</button>
+          <div id="spider-legend" style="display:flex;gap:6px;flex-wrap:wrap;margin-left:4px;"></div>
+        </div>
+        <div class="map-stage-wrap" id="map-stage-wrap">
+          <div class="map-stage" id="map-stage">
+            <svg id="spider-svg" style="position:absolute;top:0;left:0;overflow:visible;pointer-events:none;"></svg>
+            <div id="spider-nodes" style="position:absolute;top:0;left:0;"></div>
+          </div>
+        </div>
+        <div id="spider-add-panel">
+          <div style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:8px;" id="spider-panel-label">Add report to…</div>
+          <div id="spider-panel-list" style="display:flex;flex-direction:column;gap:5px;max-height:220px;overflow-y:auto;"></div>
+          <button onclick="closeAddPanel()" style="margin-top:10px;width:100%;background:none;border:1px solid var(--border2);color:var(--muted);font-family:var(--font);font-size:12px;padding:6px;border-radius:4px;cursor:pointer;">Cancel</button>
+        </div>
+        <p style="font-size:11px;color:var(--subtle);margin-top:8px;text-align:center;">Drag background to pan · Scroll to zoom · Drag nodes to move · + add · × remove</p>
+      </div>
+    </div>
+
+    <!-- NOTIFICATIONS -->
+    <div class="tab-content" id="ptab-notifications">
+      <div class="topbar"><button class="mob-menu-btn" onclick="openMobileSidebar()" aria-label="Menu"><svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 5h14M3 10h14M3 15h14" stroke-linecap="round"/></svg></button><span class="topbar-title">Notifications</span><button onclick="markAllNotifsRead()" style="background:none;border:1px solid var(--border2);color:var(--muted);font-family:var(--font);font-size:12px;font-weight:500;padding:5px 12px;border-radius:20px;cursor:pointer;margin-left:auto;" onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--accent)'" onmouseout="this.style.borderColor='var(--border2)';this.style.color='var(--muted)'">Mark all read</button></div>
+      <div style="padding:20px 24px;max-width:680px;">
+        <div id="notif-list-mgr" style="display:flex;flex-direction:column;gap:10px;">
+          <div style="color:var(--muted);font-size:13px;text-align:center;padding:40px;">Loading notifications…</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MY PROFILE -->
+    <div class="tab-content" id="ptab-profile">
+      <div class="topbar"><button class="mob-menu-btn" onclick="openMobileSidebar()" aria-label="Menu"><svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 5h14M3 10h14M3 15h14" stroke-linecap="round"/></svg></button>
+        <span class="topbar-title">My Profile</span>
+        <div class="topbar-right">
+          <button onclick="profileSave()" style="background:var(--accent);border:none;color:#fff;font-family:var(--font);font-size:12px;font-weight:600;padding:7px 16px;border-radius:20px;cursor:pointer;transition:opacity .15s;" onmouseover="this.style.opacity='.85'" onmouseout="this.style.opacity='1'">Save changes</button>
+          <span id="profile-save-status" style="font-size:11px;color:var(--muted);margin-left:4px;"></span>
+        </div>
+      </div>
+      <div class="page-scroll"><div class="page-wrap" style="max-width:720px;">
+
+        <!-- Profile header card -->
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--rlg);padding:24px;box-shadow:var(--niond-shadow);margin-bottom:16px;display:flex;align-items:flex-start;gap:20px;">
+          <div style="position:relative;flex-shrink:0;">
+            <div class="sidebar-avatar" id="profile-big-avatar" style="width:72px;height:72px;border-radius:16px;font-size:26px;font-weight:800;"></div>
+            <label style="position:absolute;bottom:-6px;right:-6px;width:24px;height:24px;border-radius:50%;background:var(--accent);border:2px solid var(--surface);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:12px;" title="Change photo" for="profile-pic-input2">✎</label>
+            <input type="file" id="profile-pic-input2" accept="image/*" style="display:none;" onchange="handleProfilePic(this)" />
+          </div>
+          <div style="flex:1;min-width:0;">
+            <div style="font-size:20px;font-weight:700;text-transform:capitalize;margin-bottom:4px;" id="profile-name-display">—</div>
+            <div id="profile-tenure-badge" style="font-size:12px;color:var(--muted);margin-bottom:8px;"></div>
+            <div id="profile-campaigns-display" style="display:flex;flex-wrap:wrap;gap:6px;"></div>
+          </div>
+        </div>
+
+        <!-- Info fields -->
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--rlg);padding:20px;box-shadow:var(--niond-shadow);margin-bottom:16px;">
+          <div style="font-size:10px;font-weight:800;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;margin-bottom:14px;">Profile details</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+            <div>
+              <label style="font-size:11px;font-weight:600;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;display:block;margin-bottom:5px;">City</label>
+              <input type="text" id="profile-city" class="field-input" placeholder="e.g. Glasgow" oninput="profileDirty()" />
+            </div>
+            <div>
+              <label style="font-size:11px;font-weight:600;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;display:block;margin-bottom:5px;">Phone</label>
+              <input type="text" id="profile-phone" class="field-input" placeholder="e.g. 07700 900000" oninput="profileDirty()" />
+            </div>
+            <div>
+              <label style="font-size:11px;font-weight:600;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;display:block;margin-bottom:5px;">Start date</label>
+              <input type="date" id="profile-start-date" class="field-input" oninput="profileDirty()" />
+            </div>
+            <div>
+              <label style="font-size:11px;font-weight:600;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;display:block;margin-bottom:5px;">Weekly target (£)</label>
+              <input type="number" id="profile-weekly-target" class="field-input" placeholder="e.g. 5000" min="0" step="100" oninput="profileDirty()" />
+            </div>
+            <div style="grid-column:span 2;">
+              <label style="font-size:11px;font-weight:600;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;display:block;margin-bottom:5px;">Bio / team motto</label>
+              <input type="text" id="profile-bio" class="field-input" placeholder="e.g. Work hard, stay humble." oninput="profileDirty()" />
+            </div>
+          </div>
+        </div>
+
+        <!-- Campaigns card (read-only assigned by admin, view only) -->
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--rlg);padding:20px;box-shadow:var(--niond-shadow);margin-bottom:16px;">
+          <div style="font-size:10px;font-weight:800;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;margin-bottom:12px;">Assigned campaigns</div>
+          <div id="profile-campaigns-list" style="display:flex;flex-wrap:wrap;gap:8px;">
+            <div style="font-size:12px;color:var(--muted);">Loading…</div>
+          </div>
+          <div style="font-size:11px;color:var(--muted);margin-top:10px;">Campaigns are assigned by your admin. Contact them to update.</div>
+        </div>
+
+        <!-- Stats card (computed) -->
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--rlg);padding:20px;box-shadow:var(--niond-shadow);margin-bottom:16px;">
+          <div style="font-size:10px;font-weight:800;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;margin-bottom:12px;">Quick stats</div>
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;" id="profile-stats-grid">
+            <div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:14px 16px;text-align:center;">
+              <div style="font-size:22px;font-weight:800;letter-spacing:-.03em;" id="pstat-reps">—</div>
+              <div style="font-size:11px;color:var(--muted);margin-top:3px;">Active reps</div>
+            </div>
+            <div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:14px 16px;text-align:center;">
+              <div style="font-size:22px;font-weight:800;letter-spacing:-.03em;" id="pstat-tenure">—</div>
+              <div style="font-size:11px;color:var(--muted);margin-top:3px;">Months tenure</div>
+            </div>
+            <div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:14px 16px;text-align:center;">
+              <div style="font-size:22px;font-weight:800;letter-spacing:-.03em;" id="pstat-target">—</div>
+              <div style="font-size:11px;color:var(--muted);margin-top:3px;">Weekly target</div>
+            </div>
+          </div>
+        </div>
+
+      </div></div>
+    </div>
+
+    <!-- PAY TREND -->
+    <!-- NOTES -->
+    <div class="tab-content" id="ptab-notes">
+      <div class="topbar"><button class="mob-menu-btn" onclick="openMobileSidebar()" aria-label="Menu"><svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 5h14M3 10h14M3 15h14" stroke-linecap="round"/></svg></button>
+        <span class="topbar-title">Notes</span>
+        <div class="topbar-right" id="notes-topbar-right"></div>
+      </div>
+      <div class="notes-shell">
+        <!-- Folder sidebar -->
+        <div class="notes-sb">
+          <div class="notes-sb-top">
+            <div class="notes-sb-title">Folders</div>
+            <button class="notes-new-btn" onclick="notesNewNote()">+ New note</button>
+          </div>
+          <div class="notes-folder-scroll" id="nf-list"></div>
+          <div style="padding:8px 10px;border-top:1px solid var(--border);flex-shrink:0;">
+            <button class="nf-add-btn" onclick="notesShowFolderModal()">
+              <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M8 3v10M3 8h10" stroke-linecap="round"/></svg>
+              New folder
+            </button>
+          </div>
+        </div>
+        <!-- Notes list + editor -->
+        <div class="notes-main">
+          <div class="notes-list-col">
+            <div class="notes-list-toolbar">
+              <div class="notes-list-search-wrap">
+                <svg class="nls-ico" width="13" height="13" viewBox="0 0 16 16" fill="none"><circle cx="6" cy="6" r="4.5" stroke="currentColor" stroke-width="1.5"/><path d="M9.5 9.5L12 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+                <input class="notes-list-search" id="notes-search" type="text" placeholder="Search notes…" oninput="notesFilter()"/>
+              </div>
+              <button class="notes-sort-btn" id="notes-sort-btn" onclick="notesCycleSort()" title="Change sort order">↕</button>
+            </div>
+            <div class="notes-list-items" id="notes-list-items"></div>
+          </div>
+          <div class="notes-editor-col" id="notes-editor-col">
+            <div class="notes-blank" id="notes-blank">
+              <div class="notes-blank-ico">📝</div>
+              <div style="font-weight:600;color:var(--text);">No note selected</div>
+              <div style="font-size:12px;">Create a note or pick one from the list</div>
+            </div>
+            <div id="notes-editor-wrap" style="display:none;flex:1;flex-direction:column;overflow:hidden;">
+              <!-- Title row -->
+              <div class="notes-editor-hdr">
+                <input class="n-title-input" id="n-title" placeholder="Untitled note" oninput="notesMarkDirty()"/>
+                <div class="n-ed-actions">
+                  <button class="n-ed-btn" id="n-pin-btn" onclick="notesTogglePin()">📌 Pin</button>
+                  <button class="n-ed-btn del" onclick="notesDeleteCurrent()">Delete</button>
+                </div>
+              </div>
+              <!-- Template bar -->
+              <div class="notes-tmpl-bar">
+                <span class="notes-tmpl-lbl">Template:</span>
+                <select class="notes-tmpl-sel" id="n-tmpl-sel" onchange="notesApplyTemplate()">
+                  <option value="">— none —</option>
+                  <option value="1on1">1-to-1</option>
+                  <option value="perf">Performance review</option>
+                  <option value="action">Action items</option>
+                  <option value="onboard">Onboarding checklist</option>
+                  <option value="meeting">Meeting notes</option>
+                </select>
+                <button class="notes-tmpl-save-btn" onclick="notesSaveAsTemplate()">Save as template</button>
+                <select class="notes-tmpl-sel" id="n-saved-tmpl-sel" onchange="notesApplySavedTemplate()" style="margin-left:4px;">
+                  <option value="">— saved templates —</option>
+                </select>
+              </div>
+              <!-- Formatting toolbar -->
+              <div class="notes-toolbar" id="notes-toolbar">
+                <button class="nt-btn" data-cmd="bold" title="Bold (Ctrl+B)"><b>B</b></button>
+                <button class="nt-btn" data-cmd="italic" title="Italic (Ctrl+I)"><i>I</i></button>
+                <button class="nt-btn" data-cmd="strikeThrough" title="Strikethrough"><s>S</s></button>
+                <div class="nt-sep"></div>
+                <button class="nt-btn" data-cmd="h1" title="Heading 1">H1</button>
+                <button class="nt-btn" data-cmd="h2" title="Heading 2">H2</button>
+                <button class="nt-btn" data-cmd="h3" title="Heading 3">H3</button>
+                <div class="nt-sep"></div>
+                <button class="nt-btn" data-cmd="insertUnorderedList" title="Bullet list">• List</button>
+                <button class="nt-btn" data-cmd="insertOrderedList" title="Numbered list">1. List</button>
+                <button class="nt-btn" data-cmd="checklist" title="Checklist">☑ Tasks</button>
+                <div class="nt-sep"></div>
+                <button class="nt-btn" data-cmd="blockquote" title="Quote">❝</button>
+                <button class="nt-btn" data-cmd="code" title="Code block">&lt;/&gt;</button>
+                <button class="nt-btn" data-cmd="insertHorizontalRule" title="Divider">—</button>
+                <div class="nt-sep"></div>
+                <button class="nt-btn" onclick="document.execCommand('undo')" title="Undo">↩</button>
+                <button class="nt-btn" onclick="document.execCommand('redo')" title="Redo">↪</button>
+              </div>
+              <!-- Tags row -->
+              <div class="n-tags-row" id="n-tags-row">
+                <span style="font-size:11px;color:var(--muted);font-weight:500;flex-shrink:0;">Tags:</span>
+                <div id="n-tags-list"></div>
+                <button class="n-add-tag-btn" onclick="notesShowTagInput(event)">+ tag</button>
+              </div>
+              <!-- Rich editor body -->
+              <div class="notes-editor-body">
+                <div class="n-rich-editor" id="n-body" contenteditable="true" data-placeholder="Start writing…" oninput="notesMarkDirty()"></div>
+              </div>
+              <!-- Footer: folder + save status + history -->
+              <div class="n-ed-footer">
+                <span class="n-ed-folder-lbl">Folder:</span>
+                <select class="n-ed-folder-sel" id="n-folder-sel" onchange="notesMarkDirty()"></select>
+                <span class="n-ed-save-pill" id="n-saved-lbl"></span>
+                <button class="n-history-btn" onclick="notesShowHistory()">⏱ History</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- REP PAY REPORTS -->
+    <div class="tab-content" id="ptab-payrep">
+      <div class="topbar"><button class="mob-menu-btn" onclick="openMobileSidebar()" aria-label="Menu"><svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 5h14M3 10h14M3 15h14" stroke-linecap="round"/></svg></button>
+        <span class="topbar-title">Rep Pay Reports</span>
+        <div class="topbar-right" id="rp-week-selector-wrap"></div>
+      </div>
+      <div class="page-scroll" id="rp-scroll">
+        <div id="rp-root" style="padding:20px 24px;"></div>
+      </div>
+    </div>
+
+    <!-- DAILY PLANNER -->
+    <div class="tab-content" id="ptab-planner">
+      <div class="topbar"><button class="mob-menu-btn" onclick="openMobileSidebar()" aria-label="Menu"><svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 5h14M3 10h14M3 15h14" stroke-linecap="round"/></svg></button>
+        <span class="topbar-title">Daily Planner</span>
+        <div class="topbar-right">
+          <span class="week-pill" id="dp-week-pill">—</span>
+          <span class="dp-shared-badge" id="dp-shared-badge" style="display:none;">Shared</span>
+        </div>
+      </div>
+      <div class="dp-shell">
+        <!-- Day tabs -->
+        <div class="dp-day-tabs" id="dp-day-tabs"></div>
+        <!-- Pages content -->
+        <div class="dp-pages-wrap" id="dp-pages-wrap">
+          <div style="text-align:center;padding:60px 0;color:var(--muted);font-size:13px;">Loading planner…</div>
+        </div>
+        <!-- Save bar -->
+        <div class="dp-save-bar">
+          <span class="dp-save-status" id="dp-save-status"></span>
+          <div style="margin-left:auto;display:flex;align-items:center;gap:8px;">
+            <button class="dp-pdf-btn" onclick="dpDownloadPDF()" title="Download today as PDF">⬇ PDF</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- EVENT PLANNER -->
+    <div class="tab-content" id="ptab-events">
+      <div class="topbar"><button class="mob-menu-btn" onclick="openMobileSidebar()" aria-label="Menu"><svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 5h14M3 10h14M3 15h14" stroke-linecap="round"/></svg></button><span class="topbar-title">Event Planner</span><div class="topbar-right"><span class="week-pill" id="ep-week-pill">—</span></div></div>
+      <div class="page-scroll"><div class="page-wrap">
+
+        <!-- Avg wire card -->
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:16px 18px;margin-bottom:20px;box-shadow:var(--niond-shadow);">
+          <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:4px;">Average wire per sale</div>
+          <div style="font-size:12px;color:var(--muted);margin-bottom:12px;">Used to calculate breakeven across all your events. Update it any time — saved to your account.</div>
+          <div style="display:flex;align-items:center;gap:10px;">
+            <div style="position:relative;display:flex;align-items:center;">
+              <span style="position:absolute;left:10px;font-size:14px;font-weight:600;color:var(--muted);">£</span>
+              <input id="ep-avg-wire" type="number" min="0" step="0.01" placeholder="e.g. 85"
+                style="padding:9px 12px 9px 26px;border:1px solid var(--border2);border-radius:var(--rsm);background:var(--surface2);color:var(--text);font-family:var(--font);font-size:14px;font-weight:600;width:130px;outline:none;"
+                oninput="epSaveWire();epRecalc()"/>
+            </div>
+            <span id="ep-wire-saved" style="font-size:12px;color:#16a34a;display:none;">✓ Saved</span>
+          </div>
+        </div>
+
+        <!-- Events list -->
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+          <div class="sec-lbl" style="margin-bottom:0;">This week's events</div>
+          <button onclick="epAddRow()" style="background:var(--accent);border:none;color:#fff;font-family:var(--font);font-size:12px;font-weight:600;padding:6px 14px;border-radius:20px;cursor:pointer;transition:opacity .15s;" onmouseover="this.style.opacity='.85'" onmouseout="this.style.opacity='1'">+ Add event</button>
+        </div>
+
+        <div id="ep-events-list" style="display:flex;flex-direction:column;gap:8px;margin-bottom:16px;"></div>
+
+        <!-- Breakeven summary -->
+        <div id="ep-breakeven" style="display:none;margin-bottom:16px;"></div>
+
+        <!-- Save button -->
+        <div style="padding-top:16px;border-top:1px solid var(--border);">
+          <button onclick="epSave()" id="ep-save-btn" style="background:var(--accent);border:none;color:#fff;font-family:var(--font);font-size:14px;font-weight:500;padding:12px;border-radius:var(--r);cursor:pointer;width:100%;transition:opacity .15s;" onmouseover="this.style.opacity='.88'" onmouseout="this.style.opacity='1'">Save event plan for this week</button>
+          <div id="ep-save-status" style="font-size:12px;color:var(--muted);text-align:center;margin-top:8px;min-height:18px;"></div>
+        </div>
+
+      </div></div>
+    </div>
+
+  </div><!-- /content-area -->
+</div><!-- /app-shell -->
+
+<!-- SCORECARD MODAL -->
+<div id="promo-backdrop" class="promo-backdrop" onclick="if(event.target===this)closePromo()">
+  <div class="promo-modal">
+    <div class="promo-title" id="promo-title">Log promotion</div>
+    <div class="promo-sub" id="promo-sub"></div>
+    <div class="promo-label">New position</div>
+    <select class="promo-sel" id="promo-pos-sel"></select>
+    <div class="promo-btns">
+      <button class="promo-cancel" onclick="closePromo()">Cancel</button>
+      <button class="promo-confirm" onclick="confirmPromo()">Log promotion</button>
+    </div>
+  </div>
+</div>
+
+<div id="scorecard-backdrop" class="scorecard-backdrop" style="display:none;" onclick="if(event.target===this)closeScorecard()">
+  <div class="scorecard-modal">
+    <div class="sc-hdr">
+      <div class="sc-av" id="sc-av"></div>
+      <div class="sc-hdr-info">
+        <div class="sc-hdr-name" id="sc-name"></div>
+        <div class="sc-hdr-pos" id="sc-pos"></div>
+      </div>
+      <button class="sc-close" onclick="closeScorecard()">✕</button>
+    </div>
+    <div class="sc-body" id="sc-body"></div>
+  </div>
+</div>
+
+<!-- FOLDER CREATE MODAL -->
+<div id="nf-modal-backdrop" class="nf-modal-backdrop" style="display:none;" onclick="if(event.target===this)notesCloseFolderModal()">
+  <div class="nf-modal">
+    <div class="nf-modal-title">New folder</div>
+    <div class="field-group" style="margin-bottom:0;">
+      <label class="field-lbl">Folder name</label>
+      <input class="field-input" id="nf-name-input" type="text" placeholder="e.g. 1-to-1s" style="margin-bottom:0;" onkeydown="if(event.key==='Enter')notesSaveFolder()"/>
+    </div>
+    <div class="nf-colour-row" id="nf-colour-row"></div>
+    <div class="nf-modal-actions">
+      <button class="modal-btn secondary" onclick="notesCloseFolderModal()">Cancel</button>
+      <button class="modal-btn primary" onclick="notesSaveFolder()">Create</button>
+    </div>
+  </div>
+</div>
+
+<!-- NOTE HISTORY MODAL -->
+<div id="n-hist-backdrop" class="n-hist-backdrop" style="display:none;" onclick="if(event.target===this)notesCloseHistory()">
+  <div class="n-hist-modal">
+    <div class="n-hist-title">Version history <span style="font-size:11px;font-weight:400;color:var(--muted);">— click a version to restore it</span></div>
+    <div class="n-hist-list" id="n-hist-list"></div>
+    <div style="display:flex;justify-content:flex-end;margin-top:14px;flex-shrink:0;">
+      <button class="modal-btn secondary" onclick="notesCloseHistory()">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- TAG POPOVER (injected dynamically) -->
+
+
+<!-- Event modal -->
+<div id="event-modal" class="modal-backdrop" style="display:none;" onclick="if(event.target===this)closeEventModal()">
+  <div class="modal">
+    <div class="modal-title" id="event-modal-title">Add event</div>
+    <div class="modal-field"><label class="modal-label">Title</label><input class="modal-input" id="ev-title" type="text" placeholder="Event name…"/></div>
+    <div class="modal-field"><label class="modal-label">Category</label>
+      <div class="colour-picker" id="ev-colour-picker" style="gap:10px;">
+        <div class="colour-swatch selected" data-cat="personal" style="background:#2563ff;" title="Personal" onclick="selectCat(this,'personal')"></div>
+        <div class="colour-swatch" data-cat="work" style="background:#22c55e;" title="Work" onclick="selectCat(this,'work')"></div>
+        <div class="colour-swatch" data-cat="team" style="background:#ec4899;" title="Pink" onclick="selectCat(this,'team')"></div>
+        <div class="colour-swatch" data-cat="reminder" style="background:#f59e0b;" title="Yellow" onclick="selectCat(this,'reminder')"></div>
+        <div class="colour-swatch" data-cat="admin" style="background:#7c3aed;" title="Purple" onclick="selectCat(this,'admin')"></div>
+        <div class="colour-swatch" data-cat="orange" style="background:#f97316;" title="Orange" onclick="selectCat(this,'orange')"></div>
+        <div class="colour-swatch" data-cat="rose" style="background:#f43f5e;" title="Rose" onclick="selectCat(this,'rose')"></div>
+        <div class="colour-swatch" data-cat="cyan" style="background:#06b6d4;" title="Cyan" onclick="selectCat(this,'cyan')"></div>
+      </div>
+      <div style="font-size:11px;color:var(--muted);margin-top:4px;" id="ev-cat-lbl">Personal</div>
+    </div>
+    <div class="modal-actions">
+      <button class="modal-btn del" id="ev-delete-btn" onclick="deleteEvent()" style="display:none;margin-right:auto;">Delete</button>
+      <button class="modal-btn secondary" onclick="closeEventModal()">Cancel</button>
+      <button class="modal-btn primary" onclick="saveEvent()">Save</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+
+
+
+<!-- MOBILE BOTTOM NAV -->
+<nav class="mob-bottom-nav" id="mob-bottom-nav">
+  <button class="mob-nav-item active" id="mob-nav-home" onclick="switchTab('home');mobNavActive('home')">
+    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 9.5L10 3l7 6.5V18a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1z" stroke-linejoin="round"/><path d="M7 19V12h6v7" stroke-linejoin="round"/></svg>
+    Home
+  </button>
+  <button class="mob-nav-item" id="mob-nav-reps" onclick="switchTab('reps');mobNavActive('reps')">
+    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M13 7a3 3 0 1 1-6 0 3 3 0 0 1 6 0"/><path d="M4 17a7 7 0 0 1 12 0" stroke-linecap="round"/></svg>
+    Reps
+  </button>
+  <button class="mob-nav-item" id="mob-nav-weekly" onclick="switchTab('weekly');mobNavActive('weekly')">
+    <span id="mob-weekly-dot" style="display:none;position:absolute;top:6px;right:10px;width:7px;height:7px;background:#ef4444;border-radius:50%;"></span>
+    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="4" y="3" width="12" height="15" rx="2"/><path d="M8 7h4M8 10h4M8 13h2" stroke-linecap="round"/></svg>
+    Update
+  </button>
+  <button class="mob-nav-item" id="mob-nav-leaderboard" onclick="switchTab('leaderboard');mobNavActive('leaderboard')">
+    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M7 3h6M10 15v3M7 18h6"/><path d="M5 3v5a5 5 0 0 0 10 0V3"/><path d="M5 6H3a2 2 0 1 0 0 4h2M15 6h2a2 2 0 1 0 0 4h-2" stroke-linecap="round"/></svg>
+    Board
+  </button>
+  <button class="mob-nav-item" id="mob-nav-more" onclick="openMobileSidebar()">
+    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 5h14M3 10h14M3 15h14" stroke-linecap="round"/></svg>
+    More
+  </button>
+</nav>
+
+
+<script src="manager.js"></script>
+</body>
+</html>
