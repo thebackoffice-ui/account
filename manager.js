@@ -90,14 +90,17 @@ function checkAuth(){
   const tokenKey='tt_mgr_token_'+managerName;
   const stored=sessionStorage.getItem(tokenKey);
   if(!stored)return;
-  // Verify with server — if rejected, clear and stay on login screen
   if(!SCRIPT_URL)return;
   api({action:'checkToken',manager:managerName,token:stored})
     .then(res=>{
       if(res&&res.ok){showApp();}
       else{sessionStorage.removeItem(tokenKey);}
     })
-    .catch(()=>{sessionStorage.removeItem(tokenKey);});
+    .catch(()=>{
+      // On mobile network failure, keep the stored token and show login
+      // so the user can retry — don't wipe their session on a connectivity blip
+      sessionStorage.removeItem(tokenKey);
+    });
 }
 
 function showApp(){
@@ -2507,13 +2510,22 @@ function lbRender(){
 function getMgrToken(){return sessionStorage.getItem('tt_mgr_token_'+managerName)||'';}
 async function api(p){
   const body=JSON.stringify({token:getMgrToken(),...p});
-  // Content-Type: text/plain makes this a CORS simple request — no preflight needed.
-  // Mobile browsers without this trigger an OPTIONS preflight that Google Apps Script
-  // cannot handle, causing the fetch to fail before the script is ever called.
-  const r=await fetch(SCRIPT_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body});
-  const text=await r.text();
-  if(!r.ok)throw new Error('HTTP '+r.status+': '+text.slice(0,200));
-  try{return JSON.parse(text);}catch(e){throw new Error('Apps Script error: '+text.slice(0,200));}
+  // Content-Type: text/plain = CORS simple request, no preflight needed.
+  // credentials: omit prevents mobile browsers (iOS Safari) sending cookies,
+  // which causes Google to redirect to its own login page instead of running the script.
+  const controller=new AbortController();
+  const timer=setTimeout(()=>controller.abort(),20000);
+  let r,text;
+  try{
+    r=await fetch(SCRIPT_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body,credentials:'omit',redirect:'follow',signal:controller.signal});
+    text=await r.text();
+  }catch(e){
+    if(e.name==='AbortError')throw new Error('Request timed out — check your connection and try again.');
+    throw new Error('Network error: '+(e.message||'could not reach server'));
+  }finally{clearTimeout(timer);}
+  if(!r.ok)throw new Error('Server error ('+r.status+') — try again or contact your admin.');
+  if(text.trim().startsWith('<'))throw new Error('Got a login page instead of data — Apps Script may not be deployed as "Anyone".');
+  try{return JSON.parse(text);}catch(e){throw new Error('Unexpected response — redeploy the Apps Script and try again.');}
 }
 function showToast(msg,type,dur){const t=document.getElementById('toast');t.textContent=msg;t.className=`toast ${type} show`;setTimeout(()=>t.className='toast',dur||3000);}
 window.addEventListener('resize',()=>{
