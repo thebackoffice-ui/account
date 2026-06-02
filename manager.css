@@ -28,7 +28,6 @@
   --niond-text:#0f1923;--niond-muted:#6b7d8a;--niond-subtle:#a0b0ba;
   --niond-teal:#0f766e;--niond-teal-primary:#0f766e;--niond-teal-primary-soft:rgba(15,118,110,0.09);
   --niond-teal-soft:rgba(15,118,110,0.08);--niond-teal2:#14b8a6;
-  --niond-purple:#0f766e;--niond-purple-soft:rgba(15,118,110,0.08);
   --niond-amber:#f59e0b;
 
   /* ── Position palette ── */
@@ -478,7 +477,6 @@ select.wr-input{cursor:pointer;appearance:none;}
 /* Mini calendar on home */
 .mini-cal{font-size:12px;}
 .mini-cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:1px;margin-top:8px;}
-.mini-cal-hdr{font-size:10px;font-weight:700;color:var(--subtle);text-align:center;padding:3px 0;}
 .mini-cal-cell{text-align:center;padding:4px 2px;border-radius:4px;cursor:default;font-size:11px;color:var(--muted);}
 .mini-cal-cell.this-month{color:var(--text);}
 .mini-cal-cell.today{background:var(--accent);color:#fff;font-weight:700;border-radius:50%;}
@@ -771,7 +769,7 @@ select.wr-input{cursor:pointer;appearance:none;}
 .sc-hdr-pos{margin-top:3px;}
 .sc-close{margin-left:auto;background:none;border:none;color:var(--muted);font-size:18px;cursor:pointer;width:28px;height:28px;border-radius:6px;display:flex;align-items:center;justify-content:center;transition:background .12s;flex-shrink:0;}
 .sc-close:hover{background:var(--surface2);}
-.sc-body{padding:20px 22px;overflow-y:auto;display:flex;flex-direction:column;gap:22px;}
+.sc-body{padding:20px 22px;overflow-y:auto;display:flex;flex-direction:column;gap:22px;overscroll-behavior:contain;}
 .sc-sec-title{font-size:10px;font-weight:800;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;margin-bottom:12px;display:flex;align-items:center;gap:7px;}
 .sc-timeline{display:flex;flex-direction:column;}
 .sc-tl-row{display:flex;align-items:flex-start;gap:14px;position:relative;}
@@ -1301,6 +1299,18 @@ select.wr-input{cursor:pointer;appearance:none;}
   .promo-modal { width: min(320px, 92vw); }
 
   /* ═══════════════════════════════════════════════════
+     NOTES TAB
+  ═══════════════════════════════════════════════════ */
+  .notes-shell { flex-direction: column; height: auto; overflow: visible; }
+  .notes-sb { width: 100%; border-right: none; border-bottom: 1px solid var(--border); flex-direction: row; flex-wrap: wrap; overflow: visible; }
+  .notes-sb-top { width: 100%; padding: 10px 12px; }
+  .notes-folder-scroll { flex-direction: row; flex-wrap: wrap; padding: 6px 10px 8px; overflow-x: auto; overflow-y: visible; display: flex; }
+  .nf-item { flex-shrink: 0; }
+  .notes-main { flex-direction: column; overflow: visible; }
+  .notes-list-col { width: 100%; border-right: none; border-bottom: 1px solid var(--border); max-height: 280px; }
+  .notes-editor-wrap { flex: 1; min-height: 400px; }
+
+  /* ═══════════════════════════════════════════════════
      MISC
   ═══════════════════════════════════════════════════ */
   .login-box { padding: 28px 22px; max-width: 340px; }
@@ -1394,7 +1404,6 @@ select.wr-input{cursor:pointer;appearance:none;}
 [data-theme="dark"] .nav-item.active { background:#0f766e; color:#fff; box-shadow:0 2px 8px rgba(15,118,110,.4); }
 [data-theme="dark"] .theme-toggle { color:var(--muted); }
 [data-theme="dark"] .theme-toggle:hover { background:rgba(255,255,255,.06); color:var(--text); }
-[data-theme="dark"] .home-scroll { background:#0d1117 !important; }
 [data-theme="dark"] .nd-card-sub,[data-theme="dark"] .nd-stat-lbl,[data-theme="dark"] .nd-lb-camp,[data-theme="dark"] .nd-rep-pos,[data-theme="dark"] .nd-link-sub { color:var(--muted); }
 [data-theme="dark"] .nd-link-row:hover,[data-theme="dark"] .nd-lb-row:hover,[data-theme="dark"] .nd-rep-row:hover { background:var(--surface2); }
 [data-theme="dark"] .nd-view-all-btn { background:rgba(104,64,176,0.12); color:#b090e8; border-top-color:var(--border); }

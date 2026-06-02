@@ -846,7 +846,7 @@ function updateWeekNav() {
   document.getElementById('next-week').disabled=idx>=allWeeks.length-1;
   const isNow=viewWeekKey===currentWeek;
   document.getElementById('week-display').innerHTML=
-    `w/c ${formatWeek(viewWeekKey)}`+(isNow?' <span class="now-badge">NOW</span>':'');
+    formatWeek(viewWeekKey)+(isNow?' <span class="now-badge">NOW</span>':'');
 }
 function changeWeek(dir) {
   const idx=allWeeks.indexOf(viewWeekKey), ni=idx+dir;
@@ -998,7 +998,7 @@ function renderPeople() {
 
 function renderPeopleTable(rows) {
   const tbody=document.getElementById('people-tbody');
-  if (!rows.length) { tbody.innerHTML='<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:32px;">No people tracked yet.</td></tr>'; return; }
+  if (!rows.length) { tbody.innerHTML='<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:32px;">No people tracked yet.</td></tr>'; return; }
   tbody.innerHTML=rows.map(r=>`
     <tr>
       <td style="font-weight:500;">${esc(r.name)}</td>
@@ -1708,9 +1708,17 @@ function exportReviewPDF(id) {
   const submittedDate = r.submittedAt ? new Date(r.submittedAt).toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long',year:'numeric'}) : '';
 
   // Use pdfHtml if available from the submission, else build from data
+  // Strip any script/iframe tags before injecting to prevent XSS
+  function sanitiseHtml(h) {
+    return String(h||'')
+      .replace(/<script[\s\S]*?<\/script>/gi,'')
+      .replace(/<iframe[\s\S]*?<\/iframe>/gi,'')
+      .replace(/on\w+\s*=\s*["'][^"']*["']/gi,'')
+      .replace(/javascript\s*:/gi,'');
+  }
   let bodyHtml = '';
   if (d.pdfHtml) {
-    bodyHtml = d.pdfHtml;
+    bodyHtml = sanitiseHtml(d.pdfHtml);
   } else {
     bodyHtml = Object.entries(d).filter(([k])=>k!=='pdfHtml').map(([key,val])=>{
       if (!val || (Array.isArray(val) && !val.length)) return '';
@@ -1962,7 +1970,6 @@ function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;')
 
 
 // ── Calendar colour picker ────────────────────────────
-const CAT_COLORS_ADM={personal:'#2563ff',work:'#22c55e',team:'#ec4899',reminder:'#f59e0b',admin:'#7c3aed',orange:'#f97316',rose:'#f43f5e',cyan:'#06b6d4'};
 function selectCalColour(el,cat){document.querySelectorAll('#cal-colour-picker .cal-swatch').forEach(s=>s.classList.remove('selected'));el.classList.add('selected');}
 function getSelectedCalColour(){const s=document.querySelector('#cal-colour-picker .cal-swatch.selected');return s?s.dataset.cat:'personal';}
 

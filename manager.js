@@ -10,7 +10,7 @@ function applyPositionClasses(){
     else if(p.includes('solo')) el.classList.add('pos-Solo');
     else if(p.includes('leader')) el.classList.add('pos-Leader');
     else if(p.includes('core')) el.classList.add('pos-Core');
-    else if(p.includes('junior')) el.classList.add('pos-JuniorPartner');
+    else if(p.includes('junior')) el.classList.add('pos-Junior');
   });
 }
 
@@ -94,12 +94,14 @@ function checkAuth(){
   api({action:'checkToken',manager:managerName,token:stored})
     .then(res=>{
       if(res&&res.ok){showApp();}
-      else{sessionStorage.removeItem(tokenKey);}
+      else{
+        // Server explicitly rejected the token — clear it
+        sessionStorage.removeItem(tokenKey);
+      }
     })
     .catch(()=>{
-      // On mobile network failure, keep the stored token and show login
-      // so the user can retry — don't wipe their session on a connectivity blip
-      sessionStorage.removeItem(tokenKey);
+      // Network error (mobile blip, no connection) — keep the token so the
+      // manager can retry login without having to re-enter their password
     });
 }
 
@@ -178,6 +180,7 @@ function avStyle(name,pos){
 
 // ── State ──────────────────────────────────────────────
 let roster=[],weekLeavers=new Set(),allReports=[],weekSubmitted=false,calEvents=[],announcement=null,notes='',lastWeekCount=0,ackDone=false,savedReviews=[],allPayData=[],managerNotifs=[];
+let wireByWeekGlobal=null;
 let _myProfile=null,_myClients=[];
 
 async function loadAll(){
@@ -202,7 +205,10 @@ async function loadAll(){
     settled.forEach((r,i)=>{if(r.status==='rejected')console.warn('loadAll action',i,'failed:',r.reason);});
     const[rRes,sRes,mRes,rpRes,calRes,annRes,notesRes,prevRes,pdRes,picRes,revRes,notifRes,profRes,clRes]=settled.map(unwrap);
     if(rRes.roster)roster=rRes.roster;
-    if(sRes.rows&&sRes.rows.length){weekSubmitted=true;document.getElementById('banner-done').style.display='block';weekLeavers=new Set(sRes.rows.filter(r=>r.leaver).map(r=>r.id).filter(Boolean));}
+    if(sRes.rows&&sRes.rows.length){weekSubmitted=true;document.getElementById('banner-done').style.display='block';
+      // Submission rows have no id — match by name against the roster to get roster ids
+      weekLeavers=new Set(sRes.rows.filter(r=>r.leaver).map(r=>{const m=roster.find(x=>x.name&&r.name&&x.name.toLowerCase()===r.name.toLowerCase());return m?m.id:null;}).filter(Boolean));
+    }
     if(mRes.mapData){try{const d=JSON.parse(mRes.mapData);sp.nodes=d.nodes||[];sp.edges=d.edges||[];}catch(e){}}
     if(rpRes.reports)allReports=rpRes.reports;
     if(calRes.events)calEvents=calRes.events;
@@ -289,6 +295,7 @@ function renderHome(){
 
   if(!weekSubmitted)document.getElementById('weekly-badge').style.display='';
   else document.getElementById('weekly-badge').style.display='none';
+  syncWeeklyDot();
 
   const active=roster.filter(r=>!r.leaver);
   const leavers=roster.filter(r=>r.leaver);
@@ -313,7 +320,7 @@ function renderHome(){
     const take=parseFloat((pd&&pd.mgrTake!==''?pd.mgrTake:null)||rep?.mgrTake||0)||0;
     return{wk,wire,take};
   });
-  window.wireByWeekGlobal=wireByWeek;
+  wireByWeekGlobal=wireByWeek;
 
   const curWire=wireByWeek[5]?.wire||0;
   const prevWire=wireByWeek[4]?.wire||0;
@@ -960,6 +967,8 @@ async function submitWeek(){
       });
       weekLeavers.clear();weekPromoted.clear();
       btn.disabled=false;btn.textContent='Update submission';
+      document.getElementById('weekly-badge').style.display='none';
+      syncWeeklyDot();
       showToast('Team submitted ✓','success');
       renderAll();
     }else throw new Error(JSON.stringify(res));
@@ -2454,7 +2463,7 @@ function switchTab(tab){
   });
   if(tab==='events'){epInit();}
   if(tab==='map'){setTimeout(()=>{initMapPan();if(sp.nodes.length===0)rebuildMap();else{renderSpider();renderLegend();}applyTransform();},50);}
-  if(tab==='home'&&typeof wireByWeekGlobal!=='undefined'){requestAnimationFrame(()=>drawProdChart(wireByWeekGlobal));}
+  if(tab==='home'&&wireByWeekGlobal!==null){requestAnimationFrame(()=>drawProdChart(wireByWeekGlobal));}
   if(tab==='calendar')renderCalendar();
   if(tab==='leaderboard')lbInit();
   if(tab==='review'){showReviewForm();}
@@ -2587,7 +2596,7 @@ async function api(p){
 function showToast(msg,type,dur){const t=document.getElementById('toast');t.textContent=msg;t.className=`toast ${type} show`;setTimeout(()=>t.className='toast',dur||3000);}
 window.addEventListener('resize',()=>{
   if(document.getElementById('ptab-map').classList.contains('active'))renderEdges();
-  if(document.getElementById('ptab-home').classList.contains('active')&&typeof wireByWeekGlobal!=='undefined')drawProdChart(wireByWeekGlobal);
+  if(document.getElementById('ptab-home').classList.contains('active')&&wireByWeekGlobal!==null)drawProdChart(wireByWeekGlobal);
 });
 
 if(!managerName){document.getElementById('login-screen').innerHTML='<div class="login-box"><div class="login-logo">The <span>Back Office</span></div><h2 style="font-size:18px;margin-bottom:8px;text-align:center;">No manager specified</h2><p style="color:var(--muted);font-size:13px;text-align:center;">Add your name to the URL: manager.html?name=sarah</p></div>';}
@@ -4769,16 +4778,14 @@ function mobNavActive(tab) {
   }
 })();
 
-/* Mirror weekly-badge visibility to mobile dot */
-const _mobWeeklyObserver = new MutationObserver(() => {
+/* Sync the sidebar badge and mobile bottom-nav dot together */
+function syncWeeklyDot() {
   const badge = document.getElementById('weekly-badge');
-  const dot = document.getElementById('mob-weekly-dot');
-  if (badge && dot) dot.style.display = (badge.style.display === 'none' || !badge.textContent) ? 'none' : 'block';
-});
-document.addEventListener('DOMContentLoaded', () => {
-  const badge = document.getElementById('weekly-badge');
-  if (badge) _mobWeeklyObserver.observe(badge, { attributes: true, childList: true, characterData: true });
-});
+  const dot   = document.getElementById('mob-weekly-dot');
+  if (!badge || !dot) return;
+  const visible = badge.style.display !== 'none';
+  dot.style.display = visible ? 'block' : 'none';
+}
 
 /* Swipe to close sidebar on mobile */
 (function() {
