@@ -41,7 +41,7 @@
       <button class="nav-btn" id="next-week" onclick="changeWeek(1)">›</button>
     </div>
     <button class="icon-btn" onclick="loadAll(true)">↻ Refresh</button>
-    <button class="theme-btn" onclick="toggleTheme()" id="theme-btn">🌙 Dark</button>
+    <button class="theme-btn" onclick="toggleTheme()" id="theme-btn"><svg id="theme-icon" width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M17 12a7 7 0 1 1-9-9 5.5 5.5 0 0 0 9 9z" stroke-linejoin="round"/></svg> Dark</button>
   </div>
 </header>
 
@@ -122,7 +122,7 @@
       </div>
       <!-- Pay Report extra fields -->
       <div id="ul-pay-fields" style="display:none;margin-top:14px;background:var(--surface2);border:1px solid var(--accent-border);border-radius:var(--radius);padding:16px;">
-        <div style="font-size:12px;font-weight:700;color:var(--accent);margin-bottom:12px;display:flex;align-items:center;gap:6px;">💰 Pay Report Production Data</div>
+        <div style="font-size:12px;font-weight:700;color:var(--accent);margin-bottom:12px;display:flex;align-items:center;gap:6px;"><svg width="13" height="13" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M13 5a4 4 0 0 0-7 2.5V11H4M4 14h12M6 11h6" stroke-linecap="round"/></svg> Pay Report Production Data</div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
           <div>
             <div style="font-size:11px;font-weight:600;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;margin-bottom:6px;">Office Wire (Profit) £</div>
@@ -514,9 +514,9 @@
         <div style="grid-column:span 2;">
           <div class="form-lbl" style="margin-bottom:5px;">Logo</div>
           <div style="display:flex;align-items:center;gap:12px;">
-            <div id="cl-logo-preview" style="width:56px;height:56px;border-radius:8px;background:var(--surface2);border:1px dashed var(--border2);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;">🏢</div>
+            <div id="cl-logo-preview" style="width:56px;height:56px;border-radius:8px;background:var(--surface2);border:1px dashed var(--border2);display:flex;align-items:center;justify-content:center;flex-shrink:0;color:var(--muted);"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><rect x="4" y="2" width="16" height="20" rx="1"/><path d="M9 7h2M13 7h2M9 11h2M13 11h2M9 15h6" stroke-linecap="round"/></svg></div>
             <label style="cursor:pointer;background:var(--surface);border:1px dashed var(--border2);color:var(--muted);font-size:12px;font-weight:500;padding:7px 14px;border-radius:var(--radius-sm);transition:all .15s;display:inline-flex;align-items:center;gap:6px;" onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--accent)'" onmouseout="this.style.borderColor='var(--border2)';this.style.color='var(--muted)'">
-              🖼 Upload logo
+              <svg width="13" height="13" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="2" y="4" width="16" height="13" rx="2"/><circle cx="7" cy="9" r="1.5"/><path d="M2 14l4-4 3 3 2-2 5 5" stroke-linecap="round" stroke-linejoin="round"/></svg> Upload logo
               <input type="file" accept="image/*" onchange="clPreviewLogo(this)" style="display:none;" id="cl-logo-input" />
             </label>
             <span id="cl-logo-name" style="font-size:11px;color:var(--muted);"></span>

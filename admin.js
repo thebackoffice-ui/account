@@ -651,14 +651,25 @@ function checkAdminAuth() {
 function initTheme() {
   const saved = localStorage.getItem('tt_theme')||'light';
   document.documentElement.setAttribute('data-theme', saved);
-  document.getElementById('theme-btn').textContent = saved==='dark'?'☀️ Light':'🌙 Dark';
+  _updateThemeBtn(saved);
 }
 function toggleTheme() {
   const cur = document.documentElement.getAttribute('data-theme');
   const next = cur==='dark'?'light':'dark';
   document.documentElement.setAttribute('data-theme',next);
   localStorage.setItem('tt_theme',next);
-  document.getElementById('theme-btn').textContent = next==='dark'?'☀️ Light':'🌙 Dark';
+  _updateThemeBtn(next);
+}
+const _SVG_MOON='<svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M17 12a7 7 0 1 1-9-9 5.5 5.5 0 0 0 9 9z" stroke-linejoin="round"/></svg>';
+const _SVG_SUN='<svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="10" cy="10" r="3"/><path d="M10 2v2M10 16v2M2 10h2M16 10h2M4.6 4.6l1.4 1.4M14 14l1.4 1.4M4.6 15.4l1.4-1.4M14 6l1.4-1.4" stroke-linecap="round"/></svg>';
+const _SVG_WARN='<svg width="12" height="12" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M10 3L2 17h16L10 3z" stroke-linejoin="round"/><path d="M10 9v4M10 15h.01" stroke-linecap="round"/></svg>';
+const _SVG_CAM='<svg width="13" height="13" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="2" y="6" width="16" height="12" rx="2"/><circle cx="10" cy="12" r="3"/><path d="M7 6l1-3h4l1 3" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+const _SVG_BLDG='<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="4" y="2" width="16" height="20" rx="1"/><path d="M9 7h2M13 7h2M9 11h2M13 11h2M9 15h6" stroke-linecap="round"/></svg>';
+const _SVG_POUND='<svg width="13" height="13" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M13 5a4 4 0 0 0-7 2.5V11H4M4 14h12M6 11h6" stroke-linecap="round"/></svg>';
+function _updateThemeBtn(theme){
+  const btn=document.getElementById('theme-btn');
+  if(!btn)return;
+  btn.innerHTML=(theme==='dark'?_SVG_SUN+' Light':_SVG_MOON+' Dark');
 }
 // ── State ──────────────────────────────────────────────
 var DEFAULT_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyeCMHtk4box-1rKwTt4UKF5UlpsyGWB2QISs522KkoQvJ3XzhjvvQ8wcOWU3bYJ7dc/exec';
@@ -1030,7 +1041,7 @@ function renderLinks() {
       ? `<img src="${picSrc}" style="width:52px;height:52px;border-radius:10px;object-fit:cover;border:2px solid var(--border);flex-shrink:0;" />`
       : `<div style="width:52px;height:52px;border-radius:10px;background:linear-gradient(135deg,var(--accent-dark),var(--accent));display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:700;color:#fff;flex-shrink:0;">${dn.charAt(0)}</div>`;
     const noPwBadge = !hasPassword
-      ? `<div style="display:inline-flex;align-items:center;gap:5px;background:var(--warning-soft);border:1px solid rgba(217,119,6,.3);color:var(--warning);font-size:11px;font-weight:700;padding:3px 9px;border-radius:20px;margin-bottom:4px;">⚠ No password set — manager cannot log in</div>`
+      ? `<div style="display:inline-flex;align-items:center;gap:5px;background:var(--warning-soft);border:1px solid rgba(217,119,6,.3);color:var(--warning);font-size:11px;font-weight:700;padding:3px 9px;border-radius:20px;margin-bottom:4px;">${_SVG_WARN} No password set — manager cannot log in</div>`
       : '';
     return `<div style="background:var(--surface2);border:1px solid ${!hasPassword?'rgba(217,119,6,.4)':'var(--border)'};border-radius:10px;padding:14px 16px;display:flex;flex-direction:column;gap:12px;">
       <div style="display:flex;align-items:center;gap:12px;">
@@ -1054,7 +1065,7 @@ function renderLinks() {
         <div style="font-size:11px;font-weight:600;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;margin-bottom:6px;">Profile picture</div>
         <div style="display:flex;align-items:center;gap:10px;">
           <label style="cursor:pointer;background:var(--surface);border:1px dashed var(--border2);color:var(--muted);font-size:12px;font-weight:500;padding:7px 14px;border-radius:var(--radius-sm);transition:all .15s;display:inline-flex;align-items:center;gap:6px;" onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--accent)'" onmouseout="this.style.borderColor='var(--border2)';this.style.color='var(--muted)'">
-            📷 Upload photo
+            ${_SVG_CAM} Upload photo
             <input type="file" accept="image/*" onchange="uploadProfilePic('${esc(m)}',this)" style="display:none;" />
           </label>
           ${picSrc?`<button onclick="removeProfilePic('${esc(m)}')" style="background:none;border:1px solid var(--border2);color:var(--muted);font-size:12px;padding:7px 12px;border-radius:var(--radius-sm);cursor:pointer;font-family:var(--font);" onmouseover="this.style.color='var(--danger)';this.style.borderColor='var(--danger)'" onmouseout="this.style.color='var(--muted)';this.style.borderColor='var(--border2)'">Remove</button>`:''}
@@ -1139,7 +1150,7 @@ function savePayIndexUrl() {
     })
     .catch(()=>{
       localStorage.setItem('tt_pay_index_url',v); // at least save locally
-      statusEl.textContent='⚠ Saved locally only — sheet save failed. Check script URL.';
+      statusEl.innerHTML=_SVG_WARN+' Saved locally only — sheet save failed. Check script URL.';
       showToast('Saved locally only','error');
     });
 }
@@ -1352,7 +1363,7 @@ function renderUploadHistory() {
   el.innerHTML = sorted.map(r => {
     const mgrList = (r.managers||[]).map(m=>m.charAt(0).toUpperCase()+m.slice(1)).join(', ');
     const payMeta = r.type === 'Pay Report' && (r.officeWire || r.mgrTake)
-      ? `<div style="font-size:11px;color:var(--accent);margin-top:3px;">💰 Wire: £${r.officeWire||'—'} &nbsp;·&nbsp; Take: £${r.mgrTake||'—'}</div>` : '';
+      ? `<div style="font-size:11px;color:var(--accent);margin-top:3px;display:flex;align-items:center;gap:4px;">${_SVG_POUND} Wire: £${r.officeWire||'—'} &nbsp;·&nbsp; Take: £${r.mgrTake||'—'}</div>` : '';
     return `<div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 14px;display:flex;align-items:center;gap:10px;">
       <span style="font-size:11px;font-weight:600;color:var(--accent);background:var(--accent-soft);border:1px solid var(--accent-border);padding:3px 8px;border-radius:20px;white-space:nowrap;">${esc(r.type)}</span>
       <div style="flex:1;min-width:0;">
@@ -2264,7 +2275,7 @@ async function clSaveClient() {
     // reset form
     document.getElementById('cl-client-name').value = '';
     document.getElementById('cl-campaign-type').value = 'Doors';
-    document.getElementById('cl-logo-preview').innerHTML = '🏢';
+    document.getElementById('cl-logo-preview').innerHTML = _SVG_BLDG;
     document.getElementById('cl-logo-name').textContent = '';
     _clLogoData = '';
     const inp = document.getElementById('cl-logo-input');
@@ -2300,7 +2311,7 @@ function renderClientList() {
   list.innerHTML = allClients.map(c => {
     const imgHtml = c.logoUrl
       ? `<img src="${esc(c.logoUrl)}" style="width:40px;height:40px;object-fit:contain;border-radius:6px;border:1px solid var(--border);background:#fff;" />`
-      : `<div style="width:40px;height:40px;border-radius:6px;background:var(--surface2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:18px;">🏢</div>`;
+      : `<div style="width:40px;height:40px;border-radius:6px;background:var(--surface2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;color:var(--muted);">${_SVG_BLDG}</div>`;
     const campStyle = c.campaign === 'Doors'
       ? 'background:#ffe0a0;color:#b85c00;border-color:#f08000;'
       : 'background:#b3d4ff;color:#1140cc;border-color:#1d50ff;';

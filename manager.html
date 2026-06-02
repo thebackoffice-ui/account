@@ -17,7 +17,7 @@
 <div id="login-screen" class="login-wrap">
   <div class="login-box">
     <div class="login-logo">The <span>Back Office</span></div>
-    <div class="login-title">Welcome back 👋</div>
+    <div class="login-title">Welcome back</div>
     <div class="login-sub" id="login-sub">Sign in to your dashboard</div>
     <div class="login-field">
       <label class="login-label">Password</label>
@@ -39,7 +39,7 @@
     <div class="sidebar-mgr">
       <div class="profile-upload-wrap">
         <div class="sidebar-avatar" id="sb-avatar">?</div>
-        <label class="profile-upload-btn" title="Upload profile picture" for="profile-pic-input">✎</label>
+        <label class="profile-upload-btn" title="Upload profile picture" for="profile-pic-input"><svg width="10" height="10" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 2l4 4-10 10H4v-4L14 2z" stroke-linejoin="round"/></svg></label>
         <input type="file" id="profile-pic-input" accept="image/*" style="display:none;" onchange="handleProfilePic(this)"/>
       </div>
       <div class="sidebar-name" id="sb-name">—</div>
@@ -128,7 +128,7 @@
       <div class="page-scroll"><div class="page-wrap">
         <div id="banner-done" class="banner-ok" style="display:none;"><strong>✓ Submitted this week</strong>You can update and resubmit any time.</div>
         <div class="weekly-update-desc">
-          <div class="wud-icon">👥</div>
+          <div class="wud-icon"><svg width="22" height="22" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="6" cy="7" r="3"/><circle cx="14" cy="7" r="3"/><path d="M1 17a6 6 0 0 1 10 0M9 17a6 6 0 0 1 10 0" stroke-linecap="round"/></svg></div>
           <div class="wud-body">
             <div class="wud-title">Review your team for this week</div>
             <div class="wud-text">Check everyone below is correct. Mark leavers, flag any promotions, then submit.</div>
@@ -180,8 +180,8 @@
         </div>
 
         <div class="report-tabs">
-          <button class="rtab-btn active" onclick="switchReportTab('pay')">💰 Pay Reports</button>
-          <button class="rtab-btn" onclick="switchReportTab('prolog')">📋 Pro-logs</button>
+          <button class="rtab-btn active" onclick="switchReportTab('pay')"><svg width="13" height="13" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" style="vertical-align:middle;margin-right:5px;"><path d="M13 5a4 4 0 0 0-7 2.5V11H4M4 14h12M6 11h6" stroke-linecap="round"/></svg>Pay Reports</button>
+          <button class="rtab-btn" onclick="switchReportTab('prolog')"><svg width="13" height="13" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" style="vertical-align:middle;margin-right:5px;"><path d="M5 3h7l4 4v11a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"/><path d="M12 3v5h5M7 10h6M7 13h4" stroke-linecap="round"/></svg>Pro-logs</button>
         </div>
         <div class="rtab-panel active" id="rtab-pay">
           <div id="pay-summary-strip"></div>
@@ -355,7 +355,7 @@
         <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--rlg);padding:24px;box-shadow:var(--niond-shadow);margin-bottom:16px;display:flex;align-items:flex-start;gap:20px;">
           <div style="position:relative;flex-shrink:0;">
             <div class="sidebar-avatar" id="profile-big-avatar" style="width:72px;height:72px;border-radius:16px;font-size:26px;font-weight:800;"></div>
-            <label style="position:absolute;bottom:-6px;right:-6px;width:24px;height:24px;border-radius:50%;background:var(--accent);border:2px solid var(--surface);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:12px;" title="Change photo" for="profile-pic-input2">✎</label>
+            <label style="position:absolute;bottom:-6px;right:-6px;width:24px;height:24px;border-radius:50%;background:var(--accent);border:2px solid var(--surface);display:flex;align-items:center;justify-content:center;cursor:pointer;" title="Change photo" for="profile-pic-input2"><svg width="10" height="10" viewBox="0 0 20 20" fill="none" stroke="#fff" stroke-width="1.8"><path d="M14 2l4 4-10 10H4v-4L14 2z" stroke-linejoin="round"/></svg></label>
             <input type="file" id="profile-pic-input2" accept="image/*" style="display:none;" onchange="handleProfilePic(this)" />
           </div>
           <div style="flex:1;min-width:0;">
@@ -459,7 +459,7 @@
           </div>
           <div class="notes-editor-col" id="notes-editor-col">
             <div class="notes-blank" id="notes-blank">
-              <div class="notes-blank-ico">📝</div>
+              <div class="notes-blank-ico"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 9h8M8 13h5" stroke-linecap="round"/></svg></div>
               <div style="font-weight:600;color:var(--text);">No note selected</div>
               <div style="font-size:12px;">Create a note or pick one from the list</div>
             </div>
@@ -468,7 +468,7 @@
               <div class="notes-editor-hdr">
                 <input class="n-title-input" id="n-title" placeholder="Untitled note" oninput="notesMarkDirty()"/>
                 <div class="n-ed-actions">
-                  <button class="n-ed-btn" id="n-pin-btn" onclick="notesTogglePin()">📌 Pin</button>
+                  <button class="n-ed-btn" id="n-pin-btn" onclick="notesTogglePin()"><svg width="11" height="11" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" style="vertical-align:middle;margin-right:3px;"><path d="M14 2l-8 8 1 4-4 4 4-4 4 1 8-8-5-5z" stroke-linecap="round" stroke-linejoin="round"/></svg>Pin</button>
                   <button class="n-ed-btn del" onclick="notesDeleteCurrent()">Delete</button>
                 </div>
               </div>
@@ -500,9 +500,9 @@
                 <div class="nt-sep"></div>
                 <button class="nt-btn" data-cmd="insertUnorderedList" title="Bullet list">• List</button>
                 <button class="nt-btn" data-cmd="insertOrderedList" title="Numbered list">1. List</button>
-                <button class="nt-btn" data-cmd="checklist" title="Checklist">☑ Tasks</button>
+                <button class="nt-btn" data-cmd="checklist" title="Checklist"><svg width="11" height="11" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" style="vertical-align:middle;margin-right:3px;"><rect x="3" y="3" width="14" height="14" rx="2"/><path d="M7 10l2 2 4-4" stroke-linecap="round" stroke-linejoin="round"/></svg>Tasks</button>
                 <div class="nt-sep"></div>
-                <button class="nt-btn" data-cmd="blockquote" title="Quote">❝</button>
+                <button class="nt-btn" data-cmd="blockquote" title="Quote"><svg width="11" height="11" viewBox="0 0 20 20" fill="currentColor" style="vertical-align:middle;"><path d="M4 8c0-2.2 1.8-4 4-4v2a2 2 0 0 0-2 2v1h2v5H4V8zm8 0c0-2.2 1.8-4 4-4v2a2 2 0 0 0-2 2v1h2v5h-4V8z"/></svg></button>
                 <button class="nt-btn" data-cmd="code" title="Code block">&lt;/&gt;</button>
                 <button class="nt-btn" data-cmd="insertHorizontalRule" title="Divider">—</button>
                 <div class="nt-sep"></div>

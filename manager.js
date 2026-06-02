@@ -121,7 +121,7 @@ function showApp(){
   av.textContent=dn.charAt(0);
   document.getElementById('sb-name').textContent=dn;
   document.getElementById('sb-week').textContent=formatWeek(weekKey);
-  document.getElementById('home-greeting').textContent=`Welcome back, ${dn} 👋`;
+  document.getElementById('home-greeting').textContent=`Welcome back, ${dn}`;
   document.getElementById('week-pill').textContent=formatWeek(weekKey);
   document.getElementById('week-pill2').textContent=formatWeek(weekKey);
   document.title=`${dn} · The Back Office`;
@@ -263,7 +263,7 @@ function updateSidebarProfile(){
   // City line
   const cityEl = document.getElementById('sb-city');
   if(cityEl){
-    if(_myProfile.city){ cityEl.textContent = '📍 '+_myProfile.city; cityEl.style.display=''; }
+    if(_myProfile.city){ cityEl.innerHTML = SVG.pin+' '+esc(_myProfile.city); cityEl.style.display=''; }
     else { cityEl.textContent=''; cityEl.style.display='none'; }
   }
 
@@ -295,6 +295,20 @@ var SVG={
   cal:'<svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="5" width="14" height="13" rx="2"/><path d="M3 9h14M7 3v4M13 3v4" stroke-linecap="round"/></svg>',
   chev:'<svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 3l4 4-4 4" stroke-linecap="round" stroke-linejoin="round"/></svg>',
   reps:'<svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="6" cy="7" r="3"/><circle cx="14" cy="7" r="3"/><path d="M1 17a6 6 0 0 1 10 0M9 17a6 6 0 0 1 10 0" stroke-linecap="round"/></svg>',
+  pin:'<svg width="12" height="12" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M10 2C7.8 2 6 3.8 6 6c0 3.5 4 9 4 9s4-5.5 4-9c0-2.2-1.8-4-4-4z" stroke-linejoin="round"/><circle cx="10" cy="6" r="1.5"/></svg>',
+  pinned:'<svg width="12" height="12" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M14 2l-8 8 1 4-4 4 4-4 4 1 8-8-5-5zM10 10l-2-2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  inbox:'<svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M2 13l2-7h12l2 7v3H2v-3z" stroke-linejoin="round"/><path d="M2 13h4l1.5 2h5L14 13h4" stroke-linecap="round"/></svg>',
+  lock:'<svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="4" y="9" width="12" height="9" rx="2"/><path d="M7 9V6a3 3 0 0 1 6 0v3" stroke-linecap="round"/></svg>',
+  pencil:'<svg width="12" height="12" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M14 2l4 4-10 10H4v-4L14 2z" stroke-linejoin="round"/></svg>',
+  note:'<svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="4" y="3" width="12" height="15" rx="2"/><path d="M7 8h6M7 11h4" stroke-linecap="round"/></svg>',
+  building:'<svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="3" width="14" height="15" rx="1"/><path d="M8 18V11h4v7M7 7h2M11 7h2M7 10h2M11 10h2" stroke-linecap="round"/></svg>',
+  image:'<svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="2" y="4" width="16" height="13" rx="2"/><circle cx="7" cy="9" r="1.5"/><path d="M2 14l4-4 3 3 2-2 5 5" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  moon:'<svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M17 12a7 7 0 1 1-9-9 5.5 5.5 0 0 0 9 9z" stroke-linejoin="round"/></svg>',
+  sun:'<svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="10" cy="10" r="3"/><path d="M10 2v2M10 16v2M2 10h2M16 10h2M4.6 4.6l1.4 1.4M14 14l1.4 1.4M4.6 15.4l1.4-1.4M14 6l1.4-1.4" stroke-linecap="round"/></svg>',
+  camera:'<svg width="13" height="13" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="2" y="6" width="16" height="12" rx="2"/><circle cx="10" cy="12" r="3"/><path d="M7 6l1-3h4l1 3" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  star:'<svg width="11" height="11" viewBox="0 0 20 20" fill="currentColor"><path d="M10 2l2.4 4.9 5.4.8-3.9 3.8.9 5.3L10 14.3l-4.8 2.5.9-5.3L2.2 7.7l5.4-.8L10 2z"/></svg>',
+  task:'<svg width="11" height="11" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="14" height="14" rx="2"/><path d="M7 10l2 2 4-4" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  quote:'<svg width="12" height="12" viewBox="0 0 20 20" fill="currentColor"><path d="M4 8c0-2.2 1.8-4 4-4v2a2 2 0 0 0-2 2v1h2v5H4V8zm8 0c0-2.2 1.8-4 4-4v2a2 2 0 0 0-2 2v1h2v5h-4V8z"/></svg>',
 };
 
 const CAT_COLORS={personal:'#2563ff',work:'#22c55e',team:'#ec4899',reminder:'#f59e0b',admin:'#7c3aed',orange:'#f97316',rose:'#f43f5e',cyan:'#06b6d4'};
@@ -459,7 +473,7 @@ function renderHome(){
               <div><div style="font-size:13px;font-weight:600;color:var(--muted);">Pro-log</div><div style="font-size:11px;color:var(--subtle);">Not uploaded yet</div></div>
             </div>`}
 
-        ${isThisWeekPay?`<div style="background:#FFFBEB;border-radius:8px;padding:9px 13px;font-size:11px;color:#B45309;font-weight:500;">⚠ Review pay report &amp; flag changes by 11am Friday</div>`:''}
+        ${isThisWeekPay?`<div style="background:#FFFBEB;border-radius:8px;padding:9px 13px;font-size:11px;color:#B45309;font-weight:500;display:flex;align-items:center;gap:6px;">${SVG.warning.replace('width="18" height="18"','width="13" height="13"')} Review pay report &amp; flag changes by 11am Friday</div>`:''}
         ${latestPay?`<button class="ack-btn ${ackDone?'done':''}" id="ack-btn" onclick="acknowledgeReport()" style="font-size:11px;padding:7px 14px;border-radius:20px;align-self:flex-start;">${ackDone?'Acknowledged ✓':'Mark as reviewed'}</button>`:''}
       </div>
 
@@ -1061,7 +1075,7 @@ function buildPayProductionCard(week){
     `:'<div style="font-size:13px;color:var(--subtle);margin-bottom:10px;padding:4px 0;">No production figures uploaded for this week yet.</div>'}
     <details style="margin-top:8px;">
       <summary style="font-size:12px;font-weight:600;color:var(--muted);cursor:pointer;list-style:none;display:flex;align-items:center;gap:6px;padding:4px 0;">
-        <span style="font-size:13px;">✏️</span> Edit / update figures
+        ${SVG.pencil} Edit / update figures
       </summary>
       <div style="margin-top:10px;display:grid;grid-template-columns:1fr 1fr;gap:10px;">
         <div>
@@ -1080,7 +1094,7 @@ function buildPayProductionCard(week){
 
 function renderReports(){
   _renderPayReports();
-  _renderSimpleReports(allReports.filter(r=>r.type==='Pro-log'),'prolog-reports-list','prolog-summary-strip','rt-prolog','📋','#E0F7F4','#00BFA5');
+  _renderSimpleReports(allReports.filter(r=>r.type==='Pro-log'),'prolog-reports-list','prolog-summary-strip','rt-prolog',SVG.doc,'#E0F7F4','#00BFA5');
   // Inline pay chart at top of reports page
   setTimeout(rptPtcRenderChart, 80);
 }
@@ -1151,8 +1165,8 @@ function _renderPayReports(){
         <div class="wk-hdr" style="margin-top:8px;">${fmtReportDate(w)}${isNow?'<span class="now-badge">THIS WEEK</span>':''}</div>
         ${buildPayProductionCard(w)}
         ${byW[w].map(r=>`<div class="rh-row">
-          <div style="width:34px;height:34px;border-radius:8px;background:#E8F1FF;color:#2979FF;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:16px;">📊</div>
-          <div style="flex:1;min-width:0;"><div style="font-size:13px;font-weight:600;color:var(--text);">Pay Report${r.campaign?` — ${esc(r.campaign)}`:''}</div>${isNow?`<div style="font-size:11px;color:var(--warning);margin-top:1px;">⚠ Review and let Elle know before 11am Friday</div>`:''}</div>
+          <div style="width:34px;height:34px;border-radius:8px;background:#E8F1FF;color:#2979FF;display:flex;align-items:center;justify-content:center;flex-shrink:0;">${SVG.chart}</div>
+          <div style="flex:1;min-width:0;"><div style="font-size:13px;font-weight:600;color:var(--text);">Pay Report${r.campaign?` — ${esc(r.campaign)}`:''}</div>${isNow?`<div style="font-size:11px;color:var(--warning);margin-top:1px;display:flex;align-items:center;gap:4px;">${SVG.warning.replace('width="18" height="18"','width="11" height="11"')} Review and let Elle know before 11am Friday</div>`:''}</div>
           <span class="rtype-badge rt-pay">Pay Report</span>
           <a href="${esc(r.url)}" target="_blank" class="view-btn ghost">View ↗</a>
         </div>`).join('')}
@@ -1862,7 +1876,7 @@ async function submitReview(){
   showToast('Review saved ✓ PDF generated','success');
   document.getElementById('review-form-wrap').innerHTML=`
     <div style="text-align:center;padding:60px 20px;">
-      <div style="font-size:44px;margin-bottom:16px;">✅</div>
+      <div style="margin-bottom:16px;color:#16a34a;">${SVG.check.replace('width="18" height="18"','width="44" height="44"')}</div>
       <div style="font-size:20px;font-weight:800;color:var(--text);letter-spacing:-.02em;margin-bottom:6px;">Review submitted!</div>
       <div style="font-size:13px;color:var(--muted);margin-bottom:6px;">Your PDF has been downloaded automatically.</div>
       <div style="font-size:13px;color:var(--muted);margin-bottom:28px;">It's also saved in Past Reviews for you to look back on.</div>
@@ -2686,11 +2700,11 @@ function openScorecard(repId){
   const posHistory=rep.positionHistory||[];
   const posHtml=posHistory.length
     ? posHistory.map(ph=>`<div class="sc-tl-row">
-        <div class="sc-tl-left"><div class="sc-dot pos">★</div></div>
+        <div class="sc-tl-left"><div class="sc-dot pos">${SVG.star}</div></div>
         <div class="sc-tl-body"><div class="sc-tl-label">${esc(ph.position)}</div><div class="sc-tl-date">${esc(ph.date||'')}</div></div>
       </div>`).join('')
     : rep.position
-      ? `<div class="sc-tl-row"><div class="sc-tl-left"><div class="sc-dot pos">★</div></div><div class="sc-tl-body"><div class="sc-tl-label">Currently: ${esc(rep.position)}</div><div class="sc-tl-date">No change history recorded</div></div></div>`
+      ? `<div class="sc-tl-row"><div class="sc-tl-left"><div class="sc-dot pos">${SVG.star}</div></div><div class="sc-tl-body"><div class="sc-tl-label">Currently: ${esc(rep.position)}</div><div class="sc-tl-date">No change history recorded</div></div></div>`
       : `<div class="sc-empty-msg">No position history yet.</div>`;
 
   // Flag history
@@ -3109,7 +3123,7 @@ function notesRenderFolders(){
   let html=`<div class="nf-item ${notesActiveFolderId==='all'?'active':''}" onclick="notesSetFolder('all')">
     <div class="nf-dot" style="background:#6b7d8a;"></div>All notes<span class="nf-count">${all}</span></div>`;
   if(pinned){html+=`<div class="nf-item ${notesActiveFolderId==='pinned'?'active':''}" onclick="notesSetFolder('pinned')">
-    <div class="nf-dot" style="background:#f59e0b;"></div>📌 Pinned<span class="nf-count">${pinned}</span></div>`;}
+    <div class="nf-dot" style="background:#f59e0b;"></div>${SVG.pinned} Pinned<span class="nf-count">${pinned}</span></div>`;}
   notesData.folders.forEach(f=>{
     const cnt=notesData.notes.filter(n=>n.folder===f.id).length;
     html+=`<div class="nf-item ${notesActiveFolderId===f.id?'active':''}" onclick="notesSetFolder('${esc(f.id)}')">
@@ -3197,7 +3211,7 @@ function notesRenderList(){
     const doneCount=(n.body||'').split('checked').length-1;
     const taskStr=taskCount>0?`<span class="n-tag-pill">☑ ${doneCount}/${taskCount}</span>`:'';
     return`<div class="n-card ${n.pinned?'pinned':''} ${n.id===notesActiveNoteId?'active':''}" onclick="notesOpenNote('${n.id}')">
-      <div class="n-card-title">${n.pinned?'<span class="n-pin-ico">📌</span>':''}${esc(n.title||'Untitled')}</div>
+      <div class="n-card-title">${n.pinned?`<span class="n-pin-ico">${SVG.pinned}</span>`:''}${esc(n.title||'Untitled')}</div>
       ${plainText?`<div class="n-card-preview">${esc(plainText)}</div>`:''}
       <div class="n-card-meta">
         ${folder?`<span class="n-folder-pill" style="background:${folder.color}18;color:${folder.color};border-color:${folder.color}40;">${esc(folder.name)}</span>`:''}
@@ -3223,7 +3237,7 @@ function notesOpenNote(id){
   const body=document.getElementById('n-body');
   if(body)body.innerHTML=note.body||'';
   const pinBtn=document.getElementById('n-pin-btn');
-  pinBtn.textContent=note.pinned?'📌 Unpin':'📌 Pin';
+  pinBtn.innerHTML=(note.pinned?SVG.pinned+' Unpin':SVG.pinned+' Pin');
   pinBtn.className='n-ed-btn'+(note.pinned?' pinned':'');
   // Folder selector
   const sel=document.getElementById('n-folder-sel');
@@ -3263,7 +3277,7 @@ function notesTogglePin(){
   if(!note)return;
   note.pinned=!note.pinned;
   const btn=document.getElementById('n-pin-btn');
-  btn.textContent=note.pinned?'📌 Unpin':'📌 Pin';
+  btn.innerHTML=(note.pinned?SVG.pinned+' Unpin':SVG.pinned+' Pin');
   btn.className='n-ed-btn'+(note.pinned?' pinned':'');
   notesSave();notesRenderList();notesRenderFolders();
 }
@@ -3547,7 +3561,7 @@ function dpRenderLocked(){
   const wrap = document.getElementById('dp-pages-wrap');
   if(wrap) wrap.innerHTML = `
     <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:340px;gap:14px;color:var(--muted);text-align:center;padding:32px;">
-      <div style="font-size:36px;">🔒</div>
+      <div style="color:var(--muted);">${SVG.lock.replace('width="16" height="16"','width="36" height="36"')}</div>
       <div style="font-size:15px;font-weight:700;color:var(--text);">Planner not assigned</div>
       <div style="font-size:13px;max-width:300px;line-height:1.6;">Your admin hasn't assigned you to a planner group yet. Ask them to set this up in the Planner Groups tab.</div>
     </div>`;
@@ -3617,12 +3631,12 @@ function dpBlank(){
       keyConversations:'',sitDowns:'',morningMeeting:''
     },
     events:[
-      {q:['','','',''],location:'',breakeven:''},
-      {q:['','','',''],location:'',breakeven:''},
-      {q:['','','',''],location:'',breakeven:''},
-      {q:['','','',''],location:'',breakeven:''},
-      {q:['','','',''],location:'',breakeven:''},
-      {q:['','','',''],location:'',breakeven:''}
+      {q:['','','',''],location:''},
+      {q:['','','',''],location:''},
+      {q:['','','',''],location:''},
+      {q:['','','',''],location:''},
+      {q:['','','',''],location:''},
+      {q:['','','',''],location:''}
     ]
   };
 }
@@ -3806,14 +3820,10 @@ function dpRenderDailyPageHTML(d, events, date, readOnly, mgrName){
             <textarea class="dp-event-qname" ${ro} placeholder="Name…" id="${prefix}-q3" oninput="${readOnly?'':'dpMarkDirty()'}\">${esc(ev.q?.[3]||'')}</textarea>
           </div>
         </div>
-        <div class="dp-event-footer">
-          <div class="dp-event-footer-cell">
-            <div class="dp-event-footer-lbl">📍 Location</div>
+        <div class="dp-event-footer" style="display:block;">
+          <div class="dp-event-footer-cell" style="width:100%;">
+            <div class="dp-event-footer-lbl"><svg width="11" height="11" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" style="display:inline;vertical-align:middle;margin-right:4px;"><path d="M10 2C7.24 2 5 4.24 5 7c0 4.25 5 11 5 11s5-6.75 5-11c0-2.76-2.24-5-5-5z" stroke-linecap="round" stroke-linejoin="round"/><circle cx="10" cy="7" r="1.5"/></svg>Location</div>
             <input class="dp-event-footer-input" ${ro} type="text" id="${prefix}-loc" value="${esc(ev.location||'')}" placeholder="Enter location…" oninput="${readOnly?'':'dpMarkDirty()'}"/>
-          </div>
-          <div class="dp-event-footer-cell">
-            <div class="dp-event-footer-lbl">⚡ Breakeven</div>
-            <input class="dp-event-footer-input" ${ro} type="text" id="${prefix}-be" value="${esc(ev.breakeven||'')}" placeholder="e.g. 3 sales" oninput="${readOnly?'':'dpMarkDirty()'}"/>
           </div>
         </div>
       </div>`;
@@ -3867,7 +3877,6 @@ function dpFlushCurrentDay(){
   events.forEach((ev,i)=>{
     ev.q = [g(`ev${i}-q0`),g(`ev${i}-q1`),g(`ev${i}-q2`),g(`ev${i}-q3`)];
     ev.location = g(`ev${i}-loc`);
-    ev.breakeven = g(`ev${i}-be`);
   });
 }
 
@@ -4020,7 +4029,7 @@ async function rpInit(){
   // No index URL configured
   if(!RP_INDEX_URL){
     root.innerHTML=`<div class="rp-no-index">
-      <div class="rp-no-index-title">📊 Pay Reports not configured</div>
+      <div class="rp-no-index-title">${SVG.chart} Pay Reports not configured</div>
       <div class="rp-no-index-sub">
         To enable rep pay reports, set your Week Index URL in the admin Setup tab or run this once in the browser console:<br><br>
         <code>localStorage.setItem('tt_pay_index_url', 'YOUR_INDEX_URL')</code><br><br>
@@ -4045,14 +4054,14 @@ async function rpInit(){
       .reverse(); // newest first
   }catch(e){
     root.innerHTML=`<div class="rp-no-index">
-      <div class="rp-no-index-title">⚠ Could not load week index</div>
+      <div class="rp-no-index-title">${SVG.warning} Could not load week index</div>
       <div class="rp-no-index-sub">Check that RP_INDEX_URL is correct and the sheet is shared publicly.<br><br>Error: ${esc(String(e))}</div>
     </div>`;
     rp_loading=false;return;
   }
 
   if(!rp_weekIndex.length){
-    root.innerHTML=`<div class="rp-no-index"><div class="rp-no-index-title">📭 No weeks found</div><div class="rp-no-index-sub">The Week Index sheet appears to be empty.</div></div>`;
+    root.innerHTML=`<div class="rp-no-index"><div class="rp-no-index-title">${SVG.inbox} No weeks found</div><div class="rp-no-index-sub">The Week Index sheet appears to be empty.</div></div>`;
     rp_loading=false;return;
   }
 
@@ -4095,7 +4104,7 @@ async function rp_loadWeek(url){
     rp_csvHeaders=rows[0].map(h=>h.trim());
     rp_csvRows=rows;
   }catch(e){
-    root.innerHTML=`<div class="rp-no-index"><div class="rp-no-index-title">⚠ Failed to load data</div><div class="rp-no-index-sub">${esc(String(e))}</div></div>`;
+    root.innerHTML=`<div class="rp-no-index"><div class="rp-no-index-title">${SVG.warning} Failed to load data</div><div class="rp-no-index-sub">${esc(String(e))}</div></div>`;
     return;
   }
   rp_renderRoot();
@@ -4157,7 +4166,7 @@ function rp_renderTeamView(){
   });
 
   if(!allData.length){
-    root.innerHTML=`<div class="rp-empty"><div class="rp-empty-icon">📭</div><strong style="color:var(--text);font-size:15px;">No data for ${esc(rp_activeLabel)}</strong><span style="font-size:13px;color:var(--muted);">No agents found in this week's sheet.</span></div>`;
+    root.innerHTML=`<div class="rp-empty"><div class="rp-empty-icon">${SVG.inbox.replace('width="16" height="16"','width="32" height="32"')}</div><strong style="color:var(--text);font-size:15px;">No data for ${esc(rp_activeLabel)}</strong><span style="font-size:13px;color:var(--muted);">No agents found in this week's sheet.</span></div>`;
     return;
   }
 
@@ -4165,7 +4174,7 @@ function rp_renderTeamView(){
   const data=allData.filter(d=>rp_clean(d['Office']).toLowerCase()===managerName.toLowerCase());
 
   if(!data.length){
-    root.innerHTML=`<div class="rp-empty"><div class="rp-empty-icon">📭</div><strong style="color:var(--text);font-size:15px;">No data for your team</strong><span style="font-size:13px;color:var(--muted);">No rows found with Office = "${esc(managerName)}" in ${esc(rp_activeLabel)}</span></div>`;
+    root.innerHTML=`<div class="rp-empty"><div class="rp-empty-icon">${SVG.inbox.replace('width="16" height="16"','width="32" height="32"')}</div><strong style="color:var(--text);font-size:15px;">No data for your team</strong><span style="font-size:13px;color:var(--muted);">No rows found with Office = "${esc(managerName)}" in ${esc(rp_activeLabel)}</span></div>`;
     return;
   }
 
@@ -4329,7 +4338,7 @@ function rp_renderRepReport(name){
 
   if(!matchingRows.length){
     root.innerHTML=`<button class="rp-back-btn" onclick="rp_backToTeam()">← Back to team</button>
-      <div class="rp-empty"><div class="rp-empty-icon">📭</div>
+      <div class="rp-empty"><div class="rp-empty-icon">${SVG.inbox.replace('width="16" height="16"','width="32" height="32"')}</div>
         <strong style="color:var(--text);font-size:15px;">No data for ${esc(name)}</strong>
         <span style="font-size:13px;color:var(--muted);">No rows found in ${esc(rp_activeLabel)}</span>
       </div>`;
@@ -4679,7 +4688,7 @@ function profileRender() {
       const parts = [];
       if (yrs) parts.push(yrs + (yrs===1?' year':' years'));
       if (mos) parts.push(mos + (mos===1?' month':' months'));
-      tenureEl.textContent = parts.length ? '🗓 ' + parts.join(' ') + ' with the team' : '🗓 Started this month';
+      tenureEl.innerHTML = SVG.calendar.replace('width="18" height="18"','width="12" height="12"') + ' ' + (parts.length ? parts.join(' ') + ' with the team' : 'Started this month');
       tenureEl.style.display = '';
     } else { tenureEl.textContent = ''; tenureEl.style.display = 'none'; }
   }
