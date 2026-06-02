@@ -196,8 +196,8 @@ pre { background: var(--surface2); border: 1px solid var(--border); border-radiu
 .dyn-mgr-label { font-size: 12px; font-weight: 700; color: var(--accent); text-transform: capitalize; }
 
 /* ── Admin Login ── */
-.admin-login-wrap { position:fixed; inset:0; background:var(--bg); display:flex; align-items:center; justify-content:center; z-index:2000; }
-.admin-login-box { background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:36px 40px; width:100%; max-width:380px; box-shadow:0 20px 60px rgba(0,0,0,0.15); }
+.admin-login-wrap { position:fixed; inset:0; background:var(--surface); display:flex; align-items:center; justify-content:center; z-index:2000; }
+.admin-login-box { background:transparent; padding:36px 40px; width:100%; max-width:380px; }
 .admin-login-logo { font-size:12px; font-weight:700; color:var(--muted); letter-spacing:.1em; text-transform:uppercase; margin-bottom:28px; text-align:center; }
 .admin-login-logo span { color:var(--accent); }
 .admin-login-title { font-size:20px; font-weight:700; color:var(--text); margin-bottom:4px; text-align:center; }

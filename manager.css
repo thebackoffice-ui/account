@@ -33,9 +33,10 @@ html,body{height:100%;overflow:hidden;}
 body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:14px;line-height:1.5;transition:background .2s,color .2s;display:flex;flex-direction:column;}
 
 /* ── LOGIN ── */
-.login-wrap{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:1000;flex-direction:column;gap:0;}
-.login-box{background:#fff;border-radius:20px;padding:40px 44px;width:100%;max-width:400px;box-shadow:0 20px 60px rgba(0,0,0,0.3);}
-[data-theme="dark"] .login-box{background:#0f1a1a;border:1px solid var(--border2);}
+.login-wrap{position:fixed;inset:0;background:#fff;display:flex;align-items:center;justify-content:center;z-index:1000;flex-direction:column;gap:0;}
+.login-box{background:transparent;padding:40px 44px;width:100%;max-width:400px;}
+[data-theme="dark"] .login-wrap{background:var(--surface);}
+[data-theme="dark"] .login-box{background:transparent;}
 .login-logo{font-size:13px;font-weight:700;color:#5a8888;letter-spacing:.1em;text-transform:uppercase;margin-bottom:32px;text-align:center;}
 .login-logo span{color:#14a0a5;}
 .login-title{font-size:22px;font-weight:700;color:var(--text);margin-bottom:4px;text-align:center;}
@@ -1222,7 +1223,7 @@ select.wr-input{cursor:pointer;appearance:none;}
   .promo-modal { width: min(320px, 92vw); }
 
   /* ── Login ── */
-  .login-box { padding: 28px 22px; border-radius: 16px; max-width: 340px; }
+  .login-box { padding: 28px 22px; max-width: 340px; }
 
   /* ── Week list ── */
   .wk-headcount-bar { overflow-x: auto; }
