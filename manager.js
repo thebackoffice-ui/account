@@ -245,6 +245,9 @@ async function loadAll(){
     _myProfile=(profRes&&profRes.profile!==undefined)?profRes.profile:(_myProfile||{});
     _myClients=(clRes&&Array.isArray(clRes.clients))?clRes.clients:_myClients;
     renderReports();renderCalendar();refreshAddLeaderDropdown();
+    // Re-render home so the chart gets allReports data, and update sidebar profile
+    renderHome();
+    updateSidebarProfile();
   }catch(e){console.error('loadAll fatal:',e);renderAll();}
 }
 
