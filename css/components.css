@@ -1163,3 +1163,30 @@ select.wr-input{cursor:pointer;appearance:none;}
   border-bottom: 1px solid var(--border);
   background: var(--surface2);
 }
+
+/* ── My Reps — individual card style ───────────────── */
+#rep-list .rep-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  box-shadow: var(--s1);
+  margin-bottom: 8px;
+  overflow: hidden;
+}
+#rep-list .rep-card:last-child {
+  margin-bottom: 0;
+}
+#rep-list .rep-card.is-leaver {
+  border-left: 3px solid var(--warning);
+}
+#rep-list .rep-group-hdr {
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: .1em;
+  color: var(--muted);
+  padding: 14px 0 6px;
+}
+#rep-list .rep-group-hdr:first-child {
+  padding-top: 0;
+}
