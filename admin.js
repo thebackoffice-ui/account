@@ -1482,6 +1482,22 @@ async function pushCalendarEvent() {
     showToast(`Event${isRecurring?' series':''} pushed to ${successCount} manager${successCount!==1?'s':''} ✓`, 'success');
     newEvents.forEach(ev => pushedCalEvents.unshift({ ...ev, managers: selectedMgrs }));
     renderCalHistory();
+
+    // Send a notification to each manager so they see it immediately
+    const notifTitle = 'New calendar event';
+    const dateLabel = new Date(newEvents[0].date).toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'});
+    const notifMsg = isRecurring
+      ? `A new recurring event has been added to your calendar: "${title}" — starting ${dateLabel}.`
+      : `"${title}" has been added to your calendar on ${dateLabel}${time?' at '+time:''}.`;
+    selectedMgrs.forEach(mgr => {
+      api({ action: 'saveNotification', notification: {
+        id: 'caln_' + Date.now() + '_' + mgr,
+        manager: mgr,
+        title: notifTitle,
+        message: notifMsg,
+        sentAt: new Date().toISOString()
+      }}).catch(()=>{});
+    });
     document.getElementById('cal-title').value = '';
     document.getElementById('cal-time').value = '';
     document.getElementById('cal-notes').value = '';
