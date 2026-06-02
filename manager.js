@@ -342,7 +342,7 @@ function renderHome(){
   let nd2=1;while(cells.length%7!==0)cells.push({d:fmtDate(new Date(mY,mM+1,nd2++)),o:true});
   const calGrid=DAYS.map(d=>`<div style="text-align:center;font-size:10px;font-weight:700;color:var(--muted);padding:4px 0;">${d}</div>`).join('')
     +cells.map(c=>{const isT=c.d===today;const ev=calEvents.filter(e=>e.date===c.d).length>0;const dayNum=parseInt(c.d.split('-')[2]);
-    return`<div style="text-align:center;padding:5px 2px;border-radius:50%;font-size:11px;cursor:default;${c.o?'color:var(--subtle);':'color:var(--text);'}${isT?'background:#0f766e;color:#fff;border-radius:50%;font-weight:700;':''}${ev&&!isT?'font-weight:700;':''}position:relative;">${dayNum}${ev&&!isT?'<div style="position:absolute;bottom:1px;left:50%;transform:translateX(-50%);width:3px;height:3px;background:#0f766e;border-radius:50%;"></div>':''}</div>`}).join('');
+    return`<div style="display:flex;align-items:center;justify-content:center;width:26px;height:26px;margin:0 auto;border-radius:50%;font-size:11px;cursor:default;${c.o?'color:var(--subtle);':'color:var(--text);'}${isT?'background:#0f766e;color:#fff;font-weight:700;':''}${ev&&!isT?'font-weight:700;':''}position:relative;">${dayNum}${ev&&!isT?'<div style="position:absolute;bottom:1px;left:50%;transform:translateX(-50%);width:3px;height:3px;background:#0f766e;border-radius:50%;"></div>':''}</div>`}).join('');
 
   // SVGs
 

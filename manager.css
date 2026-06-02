@@ -1089,6 +1089,9 @@ select.wr-input{cursor:pointer;appearance:none;}
   /* ── Base ── */
   html, body { overflow: hidden; }
 
+  /* ── Prevent iOS auto-zoom on input focus (triggered when font-size < 16px) ── */
+  input, textarea, select { font-size: 16px !important; }
+
   /* ── Sidebar becomes a slide-in drawer ── */
   .sidebar {
     position: fixed;
@@ -1124,10 +1127,10 @@ select.wr-input{cursor:pointer;appearance:none;}
   .mob-bottom-nav { display: flex; }
 
   /* ── Home scroll ── */
-  .home-scroll { padding: 14px 14px 10px; }
+  .home-scroll { padding: 20px 16px 16px; gap: 18px; }
 
   /* ── Announcement banner ── */
-  .nd-ann-banner { padding: 11px 14px; gap: 10px; margin-bottom: 12px; }
+  .nd-ann-banner { padding: 11px 14px; gap: 10px; margin-bottom: 16px; }
 
   /* ═══════════════════════════════════════════════════
      HOME DASHBOARD
@@ -1136,17 +1139,18 @@ select.wr-input{cursor:pointer;appearance:none;}
   /* All home grid rows collapse to single column */
   #home-grid > div {
     grid-template-columns: 1fr !important;
-    gap: 12px !important;
-    margin-bottom: 14px !important;
+    gap: 14px !important;
+    margin-bottom: 20px !important;
   }
   /* Stat tiles stay 2 cols */
   #home-grid > div[style*="repeat(4"] {
     grid-template-columns: 1fr 1fr !important;
-    gap: 10px !important;
+    gap: 12px !important;
+    margin-bottom: 20px !important;
   }
-  /* Tighten stat tile padding */
+  /* Stat tile padding */
   #home-grid > div[style*="repeat(4"] > div {
-    padding: 14px 16px !important;
+    padding: 16px !important;
   }
   /* Stat tile number size */
   #home-grid > div[style*="repeat(4"] > div > div:nth-child(2) {
@@ -1165,7 +1169,7 @@ select.wr-input{cursor:pointer;appearance:none;}
   /* ═══════════════════════════════════════════════════
      PAGE LAYOUT
   ═══════════════════════════════════════════════════ */
-  .page-scroll { padding: 14px; }
+  .page-scroll { padding: 18px 16px; }
   .page-wrap { max-width: 100%; }
   .nd-card-hdr { padding: 14px 16px 12px; }
   .nd-chart-card, .nd-links-card, .nd-lb-card, .nd-reps-card { border-radius: 10px; }
