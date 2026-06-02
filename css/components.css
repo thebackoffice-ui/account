@@ -1164,29 +1164,157 @@ select.wr-input{cursor:pointer;appearance:none;}
   background: var(--surface2);
 }
 
-/* ── My Reps — individual card style ───────────────── */
-#rep-list .rep-card {
+/* ── My Reps tab — search + filter layout ── */
+.reps-search-row {
+  margin-bottom: 10px;
+}
+.reps-search-row .rp-search-wrap {
+  margin-bottom: 0;
+}
+.reps-search-input {
+  width: 100%;
+  background: #fff;
+  border: 1px solid var(--niond-border);
+  color: var(--niond-text);
+  font-family: var(--font);
+  font-size: 13px;
+  padding: 10px 14px 10px 36px;
+  border-radius: var(--niond-r);
+  outline: none;
+  transition: border-color .15s, box-shadow .15s;
+  box-shadow: var(--niond-shadow);
+}
+.reps-search-input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(15,118,110,.08);
+}
+[data-theme="dark"] .reps-search-input {
   background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--r);
-  box-shadow: var(--s1);
+  border-color: var(--border);
+  color: var(--text);
+}
+.reps-filter-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 16px;
+}
+
+/* ── My Reps — individual card style ── */
+#rep-list .rep-card {
+  background: #fff;
+  border: 1px solid var(--niond-border);
+  border-radius: 10px;
+  box-shadow: 0 1px 4px rgba(0,0,0,.06), 0 1px 2px rgba(0,0,0,.04);
   margin-bottom: 8px;
   overflow: hidden;
+  transition: box-shadow .15s;
+}
+#rep-list .rep-card:hover {
+  box-shadow: 0 4px 12px rgba(0,0,0,.08), 0 1px 3px rgba(0,0,0,.05);
+}
+[data-theme="dark"] #rep-list .rep-card {
+  background: var(--surface);
+  border-color: var(--border);
+  box-shadow: none;
 }
 #rep-list .rep-card:last-child {
   margin-bottom: 0;
 }
 #rep-list .rep-card.is-leaver {
   border-left: 3px solid var(--warning);
+  opacity: .65;
 }
+
+/* Card head — more breathing room */
+#rep-list .rep-card-head {
+  padding: 13px 16px;
+  gap: 12px;
+}
+
+/* Rep name — slightly bolder */
+#rep-list .rep-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+/* Meta row: pos tag + reports-to arrow */
+#rep-list .rep-meta {
+  font-size: 11px;
+  color: var(--muted);
+  margin-top: 3px;
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.rep-meta-reports {
+  color: var(--muted);
+  font-size: 11px;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+.rep-meta-reports-arrow {
+  color: var(--subtle);
+}
+
+/* Flag label badge on card head (replaces dot-only) */
+.rep-flag-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 20px;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+.rep-flag-badge .rep-flag-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  border: none;
+}
+/* Flag colour variants */
+.rep-flag-badge.flag-none {
+  display: none;
+}
+.rep-flag-badge.flag-Conversation {
+  color: #f97316;
+  background: rgba(249,115,22,.1);
+  border: 1px solid rgba(249,115,22,.2);
+}
+.rep-flag-badge.flag-AtRisk {
+  color: #dc2626;
+  background: rgba(220,38,38,.09);
+  border: 1px solid rgba(220,38,38,.18);
+}
+.rep-flag-badge.flag-DoingWell {
+  color: #16a34a;
+  background: rgba(22,163,74,.09);
+  border: 1px solid rgba(22,163,74,.18);
+}
+.rep-flag-badge.flag-Watch {
+  color: #7c3aed;
+  background: rgba(124,58,237,.09);
+  border: 1px solid rgba(124,58,237,.18);
+}
+
+/* Group headers — cleaner, no background strip */
 #rep-list .rep-group-hdr {
   font-size: 10px;
   font-weight: 800;
   text-transform: uppercase;
   letter-spacing: .1em;
   color: var(--muted);
-  padding: 14px 0 6px;
+  padding: 16px 2px 6px;
+  background: none;
+  border: none;
 }
 #rep-list .rep-group-hdr:first-child {
-  padding-top: 0;
+  padding-top: 2px;
 }
