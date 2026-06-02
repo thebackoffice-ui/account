@@ -536,8 +536,7 @@ function runDeadlineCheckTrigger() {
   lrSheet.appendRow([weekKey, now.toISOString()]);
 }`;
 
-document.getElementById('apps-script-pre').textContent = APPS_SCRIPT;
-document.getElementById('apps-script-version-lbl').textContent = `v${APPS_SCRIPT_VERSION} — copy and redeploy whenever this changes`;
+// Apps Script source is populated lazily when the Setup tab is opened (see switchTab)
 
 // ── Admin Auth (server-side token) ─────────────────────
 const ADMIN_TOKEN_KEY = 'tt_admin_token';
@@ -1202,6 +1201,20 @@ function switchTab(tab) {
 
   if (tab === 'audit') { loadAuditLog(); }
 
+  // Lazy-populate the Apps Script source — only when Setup tab is opened
+  if (tab === 'setup') {
+    const pre = document.getElementById('apps-script-pre');
+    if (pre && !pre._populated) {
+      pre.textContent = APPS_SCRIPT;
+      pre._populated = true;
+    }
+    const lbl = document.getElementById('apps-script-version-lbl');
+    if (lbl && !lbl._populated) {
+      lbl.textContent = `v${APPS_SCRIPT_VERSION} — copy and redeploy whenever this changes`;
+      lbl._populated = true;
+    }
+  }
+
   if (tab === 'people') {
     const lbl = document.querySelector('#tab-people .sec-lbl');
     if (lbl && viewWeekKey !== currentWeek) lbl.textContent = 'All people ever tracked (viewing w/c ' + formatWeek(viewWeekKey) + ')';
@@ -1550,12 +1563,14 @@ async function savePersonEdit() {
   if (!rep) { showToast('Person not found in roster — they may only be in submission history', 'error'); return; }
   rep.name = name; rep.email = email; rep.position = position; rep.leaver = leaver; rep.manager = manager;
   try {
-    await api({action:'saveRep', manager, rep});
-    // If manager changed, also save under original manager to remove
+    // If manager changed: mark as leaver under old manager FIRST, then save under new manager.
+    // Doing it in this order means the old roster slot is closed before the new one opens,
+    // preventing duplicate rows if the API call partially fails.
     if (manager !== origManager) {
       const oldRep = {...rep, manager: origManager, leaver: true};
       await api({action:'saveRep', manager: origManager, rep: oldRep});
     }
+    await api({action:'saveRep', manager, rep});
     allRoster = allRoster.map(r => (r.name.toLowerCase()===origName.toLowerCase()&&r.manager===origManager) ? rep : r);
     renderPeople();
     closePersonEdit();

@@ -108,6 +108,13 @@ function checkAuth(){
 function showApp(){
   document.getElementById('login-screen').style.display='none';
   document.getElementById('app-shell').style.display='flex';
+  // Show skeleton loading state in home grid while data fetches
+  const hg=document.getElementById('home-grid');
+  if(hg)hg.innerHTML=`<div style="display:flex;flex-direction:column;gap:16px;padding:4px 0;">
+    <div class="hg-row hg-stats">${[1,2,3,4].map(()=>`<div style="height:96px;border-radius:10px;background:var(--surface2);animation:pulse 1.4s ease-in-out infinite;"></div>`).join('')}</div>
+    <div style="height:220px;border-radius:10px;background:var(--surface2);animation:pulse 1.4s ease-in-out infinite;"></div>
+    <div style="height:180px;border-radius:10px;background:var(--surface2);animation:pulse 1.4s ease-in-out infinite;"></div>
+  </div>`;
   const dn=rawName.trim().charAt(0).toUpperCase()+rawName.trim().slice(1);
   // Profile picture — show initial immediately, then fetch from sheet
   const av=document.getElementById('sb-avatar');
@@ -185,50 +192,59 @@ let _myProfile=null,_myClients=[];
 
 async function loadAll(){
   const unwrap=r=>r.status==='fulfilled'?r.value:{};
+
+  // ── Phase 1: critical data for home dashboard (render immediately on arrival) ──
   try{
-    const settled=await Promise.allSettled([
-      api({action:'getRoster',manager:managerName}),
-      api({action:'getSubmission',manager:managerName,week:weekKey}),
-      api({action:'loadMap',manager:managerName}),
-      api({action:'getReports',manager:managerName}),
-      api({action:'getCalEvents',manager:managerName}),
-      api({action:'getAnnouncement'}),
-      api({action:'getNotes',manager:managerName}),
-      api({action:'getLastWeekCount',manager:managerName,currentWeek:weekKey}),
-      api({action:'getPayData',manager:managerName}),
-      api({action:'getProfilePic',manager:managerName}),
-      api({action:'getManagerReviews',manager:managerName}),
-      api({action:'getNotifications',manager:managerName}),
-      api({action:'getManagerProfile',manager:managerName}),
-      api({action:'getClients'})
+    const phase1=await Promise.allSettled([
+      api({action:'getRoster',manager:managerName}),           // 0
+      api({action:'getSubmission',manager:managerName,week:weekKey}), // 1
+      api({action:'getAnnouncement'}),                         // 2
+      api({action:'getNotifications',manager:managerName}),    // 3
+      api({action:'getPayData',manager:managerName}),          // 4
+      api({action:'getLastWeekCount',manager:managerName,currentWeek:weekKey}) // 5
     ]);
-    settled.forEach((r,i)=>{if(r.status==='rejected')console.warn('loadAll action',i,'failed:',r.reason);});
-    const[rRes,sRes,mRes,rpRes,calRes,annRes,notesRes,prevRes,pdRes,picRes,revRes,notifRes,profRes,clRes]=settled.map(unwrap);
+    phase1.forEach((r,i)=>{if(r.status==='rejected')console.warn('loadAll phase1',i,'failed:',r.reason);});
+    const[rRes,sRes,annRes,notifRes,pdRes,prevRes]=phase1.map(unwrap);
     if(rRes.roster)roster=rRes.roster;
-    if(sRes.rows&&sRes.rows.length){weekSubmitted=true;document.getElementById('banner-done').style.display='block';
-      // Submission rows have no id — match by name against the roster to get roster ids
+    if(sRes.rows&&sRes.rows.length){
+      weekSubmitted=true;
+      document.getElementById('banner-done').style.display='block';
       weekLeavers=new Set(sRes.rows.filter(r=>r.leaver).map(r=>{const m=roster.find(x=>x.name&&r.name&&x.name.toLowerCase()===r.name.toLowerCase());return m?m.id:null;}).filter(Boolean));
     }
-    if(mRes.mapData){try{const d=JSON.parse(mRes.mapData);sp.nodes=d.nodes||[];sp.edges=d.edges||[];}catch(e){}}
+    if(sRes.acked)ackDone=true;
+    if(annRes.announcement)announcement=annRes.announcement;
+    if(notifRes.notifications)managerNotifs=notifRes.notifications;
+    if(pdRes.payData)allPayData=pdRes.payData;
+    if(prevRes.count!==undefined)lastWeekCount=prevRes.count;
+    updateNotifBadge();
+    renderHome();renderReps();renderWeekly();
+
+    // ── Phase 2: secondary data (reports, cal, map, profile, reviews, clients) ──
+    const phase2=await Promise.allSettled([
+      api({action:'getReports',manager:managerName}),          // 0
+      api({action:'getCalEvents',manager:managerName}),        // 1
+      api({action:'loadMap',manager:managerName}),             // 2
+      api({action:'getNotes',manager:managerName}),            // 3
+      api({action:'getProfilePic',manager:managerName}),       // 4
+      api({action:'getManagerReviews',manager:managerName}),   // 5
+      api({action:'getManagerProfile',manager:managerName}),   // 6
+      api({action:'getClients'})                               // 7
+    ]);
+    phase2.forEach((r,i)=>{if(r.status==='rejected')console.warn('loadAll phase2',i,'failed:',r.reason);});
+    const[rpRes,calRes,mRes,notesRes,picRes,revRes,profRes,clRes]=phase2.map(unwrap);
     if(rpRes.reports)allReports=rpRes.reports;
     if(calRes.events)calEvents=calRes.events;
-    if(annRes.announcement)announcement=annRes.announcement;
+    if(mRes.mapData){try{const d=JSON.parse(mRes.mapData);sp.nodes=d.nodes||[];sp.edges=d.edges||[];}catch(e){}}
     if(notesRes.notes!==undefined)notes=notesRes.notes||'';
-    if(prevRes.count!==undefined)lastWeekCount=prevRes.count;
-    if(sRes.acked)ackDone=true;
-    if(pdRes.payData)allPayData=pdRes.payData;
     if(picRes.picUrl){
       const av=document.getElementById('sb-avatar');
       const dn=rawName.trim().charAt(0).toUpperCase()+rawName.trim().slice(1);
       av.innerHTML=`<img src="${picRes.picUrl}" alt="${dn}" style="width:100%;height:100%;object-fit:cover;border-radius:4px;"/>`;
     }
     if(revRes.reviews)savedReviews=revRes.reviews;
-    if(notifRes.notifications)managerNotifs=notifRes.notifications;
-    // Profile — use nullish coalescing so empty object {} still sets _myProfile
-    _myProfile = (profRes && profRes.profile !== undefined) ? profRes.profile : (_myProfile || {});
-    _myClients = (clRes && Array.isArray(clRes.clients)) ? clRes.clients : _myClients;
-    updateNotifBadge();
-    renderAll();
+    _myProfile=(profRes&&profRes.profile!==undefined)?profRes.profile:(_myProfile||{});
+    _myClients=(clRes&&Array.isArray(clRes.clients))?clRes.clients:_myClients;
+    renderReports();renderCalendar();refreshAddLeaderDropdown();
   }catch(e){console.error('loadAll fatal:',e);renderAll();}
 }
 
@@ -1318,6 +1334,7 @@ function viewSavedReview(idx){
 async function downloadSavedReviewPDF(idx){
   const rev=savedReviews[idx];
   if(!rev)return;
+  await ensurePdfLib();
   const pdfHtml=buildReviewPDF(rev);
   const pdfContainer=document.createElement('div');
   pdfContainer.style.cssText='position:fixed;left:-9999px;top:0;width:794px;background:#fff;font-family:DM Sans,sans-serif;';
@@ -1818,6 +1835,7 @@ async function submitReview(){
 
   // Build a hidden element and use html2pdf to download directly
   btn.innerHTML='<span class="spinner"></span>Building PDF…';
+  await ensurePdfLib();
   const pdfContainer=document.createElement('div');
   pdfContainer.style.cssText='position:fixed;left:-9999px;top:0;width:794px;background:#fff;font-family:DM Sans,sans-serif;';
   pdfContainer.innerHTML=pdfHtml.replace(/^[\s\S]*<body[^>]*>/i,'').replace(/<\/body[\s\S]*$/i,'');
@@ -2263,7 +2281,15 @@ function outsideClick(ev){const p=document.getElementById('spider-add-panel');if
 function closeAddPanel(){document.getElementById('spider-add-panel').style.display='none';addPanelTargetId=null;}
 function addMapNode(repId){closeAddPanel();const parent=sp.nodes.find(n=>n.id===addPanelTargetId);if(!parent)return;const rep=roster.find(r=>r.id===repId);if(!rep)return;// Find angle from root to parent for direction context
 var mgr=sp.nodes.find(n=>n.id==='mgr');const baseAngle=mgr?(Math.atan2(parent.y-mgr.y,parent.x-mgr.x)):0;const siblings=sp.edges.filter(e=>e.a===parent.id).length;const RDIST=150;const spread=Math.PI*0.55;const angleOffset=(siblings===0?0:(siblings%2===1?1:-1)*Math.ceil(siblings/2)*spread/Math.max(siblings,2));const angle=baseAngle+angleOffset;sp.nodes.push({id:rep.id,label:rep.name,position:rep.position||'default',x:parent.x+RDIST*Math.cos(angle),y:parent.y+RDIST*Math.sin(angle)});sp.edges.push({a:parent.id,b:rep.id});renderSpider();scheduleMapSave();}
-function clearMap(){if(!confirm('Clear the map?'))return;sp.nodes=[];sp.edges=[];sp.nodes.push({id:'mgr',label:getMgrDisplay(),position:'Manager',x:500,y:420});renderSpider();}
+function clearMap(){
+  if(!confirm('Clear the whole map? This will remove all nodes and auto-save immediately — this cannot be undone.'))return;
+  // Cancel any pending auto-save so we control exactly what gets saved
+  clearTimeout(_mapSaveTimer);
+  sp.nodes=[];sp.edges=[];
+  sp.nodes.push({id:'mgr',label:getMgrDisplay(),position:'Manager',x:500,y:420});
+  renderSpider();
+  scheduleMapSave();
+}
 async function saveMap(){const md=JSON.stringify({nodes:sp.nodes,edges:sp.edges});try{await api({action:'saveMap',manager:managerName,mapData:md});showToast('Map saved ✓','success');}catch(e){showToast('Failed to save map','error');}}
 
 // Auto-save: debounced 2s after last change — no need to click Save layout
@@ -4529,7 +4555,21 @@ function rp_backToTeam(){
 }
 
 
+// Lazy-load html2pdf (+ html2canvas it bundles) only when first needed
+let _pdfLibLoaded = false;
+async function ensurePdfLib() {
+  if (_pdfLibLoaded || typeof html2pdf !== 'undefined') { _pdfLibLoaded = true; return; }
+  await new Promise((resolve, reject) => {
+    const s = document.createElement('script');
+    s.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js';
+    s.onload = () => { _pdfLibLoaded = true; resolve(); };
+    s.onerror = () => reject(new Error('Failed to load PDF library'));
+    document.head.appendChild(s);
+  });
+}
+
 async function dpDownloadPDF(){
+  await ensurePdfLib();
   // Flush current edits first
   dpFlushCurrentDay();
   const dates = dpGetWeekDates();

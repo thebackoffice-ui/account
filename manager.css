@@ -749,6 +749,7 @@ select.wr-input{cursor:pointer;appearance:none;}
 .toast.success{background:var(--success);color:#fff;}.toast.error{background:var(--danger);color:#fff;}.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
 .spinner{display:inline-block;width:12px;height:12px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:6px;}
 @keyframes spin{to{transform:rotate(360deg);}}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:.45;}}
 .empty-state{text-align:center;padding:36px 20px;color:var(--muted);font-size:13px;line-height:1.7;}
 .empty-state strong{display:block;font-size:15px;color:var(--text);margin-bottom:5px;font-weight:500;}
 
@@ -1338,7 +1339,7 @@ select.wr-input{cursor:pointer;appearance:none;}
 
 
 /* ── Niond-style dashboard redesign ── */
-.home-scroll { background: #f0f3f6 !important; padding: 24px 28px; }
+.home-scroll { background: var(--bg); padding: 24px 28px; }
 .nd-stat { background:var(--niond-surface); border:1px solid var(--niond-border); border-radius:var(--niond-r); padding:20px 22px; box-shadow:var(--niond-shadow); display:flex; flex-direction:column; gap:10px; transition:box-shadow .15s; }
 .nd-stat:hover { box-shadow:var(--niond-shadow-md); }
 .nd-stat-top { display:flex; align-items:center; justify-content:space-between; }
@@ -1390,7 +1391,7 @@ select.wr-input{cursor:pointer;appearance:none;}
 [data-theme="dark"] #home-grid [style*="background:#fff;border-radius:10px"] { background:var(--surface) !important; }
 [data-theme="dark"] #home-grid [style*="border-top:3px solid"] { background:var(--surface) !important; }
 [data-theme="dark"] .nd-lb-row:hover,[data-theme="dark"] .nd-rep-row:hover,[data-theme="dark"] .nd-link-row:hover { background:var(--surface2); }
-[data-theme="dark"] .home-scroll { background:#0d1117 !important; }
+[data-theme="dark"] .home-scroll { background:var(--bg); }
 [data-theme="dark"] .nd-rank-1{background:rgba(254,249,195,.12);}[data-theme="dark"] .nd-rank-2{background:rgba(241,245,249,.08);}[data-theme="dark"] .nd-rank-3{background:rgba(255,247,237,.08);}
 [data-theme="dark"] .nd-stat-val,[data-theme="dark"] .nd-lb-name,[data-theme="dark"] .nd-rep-name,[data-theme="dark"] .nd-link-name,[data-theme="dark"] .nd-card-title { color:var(--text); }
 [data-theme="dark"] .sidebar { background:var(--sidebar); border-right-color:#1c2128; }
