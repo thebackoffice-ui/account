@@ -102,11 +102,90 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:14
 .tab-content{display:none;flex:1;flex-direction:column;}
 .tab-content.active{display:flex;}
 
+/* ── SIDEBAR: remove profile section spacing ── */
+.sidebar-mgr{display:none;}
+
 /* ── TOPBAR ── */
-.topbar{height:54px;border-bottom:1px solid var(--border);background:var(--surface);padding:0 24px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
-.topbar-title{font-size:16px;font-weight:600;letter-spacing:-.01em;}
+.topbar{height:54px;border-bottom:1px solid var(--border);background:var(--surface);padding:0 24px 0 24px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;padding-right:280px;}
+.topbar-title{font-size:17px;font-weight:700;letter-spacing:-.02em;color:var(--text);}
+.topbar-title-group{display:flex;flex-direction:column;gap:1px;}
+.topbar-date{font-size:12px;color:var(--muted);font-weight:400;}
 .topbar-right{display:flex;align-items:center;gap:10px;}
 .week-pill{font-size:11px;font-weight:600;background:#f0fdfa;color:#0f766e;border:1px solid #99f6e4;padding:4px 11px;border-radius:20px;}
+
+/* ── SHARED TOPBAR RIGHT (fixed) ── */
+#shared-topbar-right{
+  position:fixed;top:0;right:0;z-index:150;
+  height:54px;
+  display:flex;align-items:center;gap:8px;
+  padding:0 20px;
+  background:var(--surface);
+  border-bottom:1px solid var(--border);
+  border-left:1px solid var(--border);
+}
+
+/* Notification bell button */
+.tb-icon-btn{
+  position:relative;width:36px;height:36px;border-radius:8px;
+  background:var(--surface2);border:1px solid var(--border);
+  color:var(--text);cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  transition:background .15s,border-color .15s;
+  flex-shrink:0;
+}
+.tb-icon-btn:hover{background:var(--accent-soft);border-color:var(--accent-border);color:var(--accent);}
+.tb-badge{
+  position:absolute;top:-5px;right:-5px;
+  background:#ef4444;color:#fff;
+  font-size:9px;font-weight:700;
+  min-width:16px;height:16px;
+  border-radius:20px;padding:0 4px;
+  display:flex;align-items:center;justify-content:center;
+  border:2px solid var(--surface);
+}
+
+/* Profile section in topbar */
+.tb-profile-wrap{
+  display:flex;align-items:center;gap:10px;
+  padding:6px 10px 6px 6px;
+  border-radius:10px;
+  cursor:pointer;
+  transition:background .15s;
+  border:1px solid transparent;
+}
+.tb-profile-wrap:hover{background:var(--surface2);border-color:var(--border);}
+.tb-avatar{width:34px;height:34px;border-radius:50%;flex-shrink:0;margin-bottom:0;}
+.tb-profile-info{display:flex;flex-direction:column;gap:1px;}
+.tb-profile-name{font-size:13px;font-weight:600;color:var(--text);white-space:nowrap;}
+.tb-profile-role{font-size:11px;color:var(--muted);white-space:nowrap;}
+
+/* ── NOTIFICATION DROPDOWN ── */
+.notif-dropdown{
+  position:fixed;top:60px;right:16px;z-index:500;
+  width:340px;
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:12px;
+  box-shadow:0 8px 32px rgba(0,0,0,.12),0 2px 8px rgba(0,0,0,.06);
+  overflow:hidden;
+}
+[data-theme="dark"] .notif-dropdown{box-shadow:0 8px 32px rgba(0,0,0,.4);}
+.notif-dd-hdr{display:flex;align-items:center;justify-content:space-between;padding:14px 16px 10px;border-bottom:1px solid var(--border);}
+.notif-dd-title{font-size:14px;font-weight:700;color:var(--text);}
+.notif-dd-mark-read{background:none;border:none;font-family:var(--font);font-size:11px;color:var(--muted);cursor:pointer;padding:0;transition:color .12s;}
+.notif-dd-mark-read:hover{color:var(--accent);}
+.notif-dd-list{max-height:320px;overflow-y:auto;padding:8px;}
+.notif-dd-item{padding:10px 12px;border-radius:8px;margin-bottom:4px;cursor:default;position:relative;transition:background .12s;}
+.notif-dd-item:hover{background:var(--surface2);}
+.notif-dd-item.unread{background:var(--accent-soft);}
+.notif-dd-dot{position:absolute;top:12px;right:12px;width:7px;height:7px;background:#ef4444;border-radius:50%;}
+.notif-dd-item-title{font-size:13px;font-weight:600;color:var(--text);margin-bottom:2px;padding-right:16px;}
+.notif-dd-item-msg{font-size:12px;color:var(--muted);line-height:1.5;margin-bottom:4px;}
+.notif-dd-item-time{font-size:10px;color:var(--subtle);}
+.notif-dd-empty{text-align:center;padding:32px 16px;color:var(--muted);font-size:13px;}
+.notif-dd-footer{padding:10px 16px;border-top:1px solid var(--border);}
+.notif-dd-see-all{width:100%;background:var(--surface2);border:1px solid var(--border);color:var(--text);font-family:var(--font);font-size:12px;font-weight:600;padding:8px;border-radius:8px;cursor:pointer;transition:all .15s;}
+.notif-dd-see-all:hover{background:var(--accent-soft);border-color:var(--accent-border);color:var(--accent);}
 
 /* ── HOME ── */
 .home-scroll{flex:1;overflow-y:auto;padding:24px;}
@@ -1114,6 +1193,13 @@ select.wr-input{cursor:pointer;appearance:none;}
 
   /* ── Base ── */
   html, body { overflow: hidden; }
+
+  /* ── Shared topbar right on mobile ── */
+  #shared-topbar-right { padding: 0 12px; gap: 6px; }
+  .tb-profile-info { display: none; }
+  .tb-avatar { width: 30px; height: 30px; font-size: 12px; }
+  .topbar { padding-right: 90px !important; }
+  .notif-dropdown { width: calc(100vw - 24px); right: 12px; }
 
   /* ── Prevent iOS auto-zoom on input focus (triggered when font-size < 16px) ── */
   input, textarea, select { font-size: 16px !important; }

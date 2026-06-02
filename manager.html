@@ -33,20 +33,38 @@
 
 <!-- APP -->
 <div id="app-shell" class="app-shell" style="display:none;">
+  <!-- Shared topbar right: notification bell + profile (fixed, sits above all tabs) -->
+  <div id="shared-topbar-right">
+    <button class="tb-icon-btn" id="tb-notif-btn" onclick="toggleNotifDropdown()" title="Notifications" aria-label="Notifications">
+      <svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M10 2a6 6 0 0 1 6 6c0 3.5 1.5 5 1.5 5h-15S4 11.5 4 8a6 6 0 0 1 6-6z" stroke-linejoin="round"/><path d="M8.5 17a1.5 1.5 0 0 0 3 0" stroke-linecap="round"/></svg>
+      <span id="tb-notif-badge" class="tb-badge" style="display:none;">0</span>
+    </button>
+    <div class="tb-profile-wrap" onclick="switchTab('profile')">
+      <div class="sidebar-avatar tb-avatar" id="sb-avatar">?</div>
+      <div class="tb-profile-info">
+        <div class="tb-profile-name" id="tb-name">—</div>
+        <div class="tb-profile-role" id="tb-role">Manager</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Notification dropdown -->
+  <div id="notif-dropdown" class="notif-dropdown" style="display:none;">
+    <div class="notif-dd-hdr">
+      <span class="notif-dd-title">Notifications</span>
+      <button class="notif-dd-mark-read" onclick="markAllNotifsRead();renderNotifDropdown()">Mark all read</button>
+    </div>
+    <div id="notif-dd-list" class="notif-dd-list"></div>
+    <div class="notif-dd-footer">
+      <button onclick="closeNotifDropdown();switchTab('notifications')" class="notif-dd-see-all">See all notifications</button>
+    </div>
+  </div>
+
   <!-- Sidebar -->
   <nav class="sidebar">
     <div class="sidebar-header"><span class="sidebar-logo">The <span>Back Office</span></span></div>
-    <div class="sidebar-mgr">
-      <div class="profile-upload-wrap">
-        <div class="sidebar-avatar" id="sb-avatar">?</div>
-        <label class="profile-upload-btn" title="Upload profile picture" for="profile-pic-input"><svg width="10" height="10" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 2l4 4-10 10H4v-4L14 2z" stroke-linejoin="round"/></svg></label>
-        <input type="file" id="profile-pic-input" accept="image/*" style="display:none;" onchange="handleProfilePic(this)"/>
-      </div>
-      <div class="sidebar-name" id="sb-name">—</div>
-      <div class="sidebar-week" id="sb-week">—</div>
-      <div id="sb-city" style="font-size:10px;color:var(--muted);margin-top:1px;display:none;"></div>
-      <div id="sb-campaigns" style="display:flex;flex-wrap:wrap;gap:3px;margin-top:4px;justify-content:center;"></div>
-    </div>
+    <!-- Hidden avatar input — keeps JS profile-pic upload working -->
+    <input type="file" id="profile-pic-input" accept="image/*" style="display:none;" onchange="handleProfilePic(this)"/>
     <div class="sidebar-nav">
 
       <!-- Home -->
@@ -70,7 +88,7 @@
 
       <div class="nav-group-label"></div>
       <button class="nav-item" onclick="switchTab('reports')" id="nav-reports"><span class="nav-icon"><svg width="15" height="15" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="11" width="3" height="6" rx="1"/><rect x="8.5" y="7" width="3" height="10" rx="1"/><rect x="14" y="3" width="3" height="14" rx="1"/></svg></span>Reports</button>
-      <button class="nav-item" onclick="switchTab('notifications')" id="nav-notifications"><span class="nav-icon"><svg width="15" height="15" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M10 2a6 6 0 0 1 6 6c0 3.5 1.5 5 1.5 5h-15S4 11.5 4 8a6 6 0 0 1 6-6z" stroke-linejoin="round"/><path d="M8.5 17a1.5 1.5 0 0 0 3 0" stroke-linecap="round"/></svg></span>Notifications<span id="notif-badge" class="nav-badge" style="display:none;">0</span></button>
+      <span id="notif-badge" style="display:none;"></span><!-- badge kept for JS compat, badge now shown on topbar bell -->
       <button class="nav-item" onclick="switchTab('profile')" id="nav-profile"><span class="nav-icon"><svg width="15" height="15" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="10" cy="7" r="3"/><path d="M4 17a7 7 0 0 1 12 0" stroke-linecap="round"/></svg></span>My Profile</button>
     </div>
     <div class="sidebar-footer">
@@ -83,7 +101,14 @@
 
     <!-- HOME -->
     <div class="tab-content active" id="ptab-home">
-      <div class="topbar"><button class="mob-menu-btn" onclick="openMobileSidebar()" aria-label="Menu"><svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 5h14M3 10h14M3 15h14" stroke-linecap="round"/></svg></button><span class="topbar-title" id="home-greeting">Dashboard</span><div class="topbar-right"><span class="week-pill" id="week-pill">—</span></div></div>
+      <div class="topbar">
+        <button class="mob-menu-btn" onclick="openMobileSidebar()" aria-label="Menu"><svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 5h14M3 10h14M3 15h14" stroke-linecap="round"/></svg></button>
+        <div class="topbar-title-group">
+          <span class="topbar-title">Dashboard</span>
+          <span class="topbar-date" id="topbar-date">—</span>
+        </div>
+        <div class="topbar-right"><span class="week-pill" id="week-pill">—</span></div>
+      </div>
       <div class="home-scroll">
         <div id="announcement-slot"></div>
         <div id="home-grid"></div>

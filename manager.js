@@ -116,12 +116,15 @@ function showApp(){
     <div style="height:180px;border-radius:10px;background:var(--surface2);animation:pulse 1.4s ease-in-out infinite;"></div>
   </div>`;
   const dn=rawName.trim().charAt(0).toUpperCase()+rawName.trim().slice(1);
-  // Profile picture — show initial immediately, then fetch from sheet
+  // Avatar initial
   const av=document.getElementById('sb-avatar');
-  av.textContent=dn.charAt(0);
-  document.getElementById('sb-name').textContent=dn;
-  document.getElementById('sb-week').textContent=formatWeek(weekKey);
-  document.getElementById('home-greeting').textContent=`Welcome back, ${dn}`;
+  if(av)av.textContent=dn.charAt(0);
+  // Topbar profile name
+  const tbName=document.getElementById('tb-name');
+  if(tbName)tbName.textContent=dn;
+  // Today's date in topbar
+  const dateEl=document.getElementById('topbar-date');
+  if(dateEl)dateEl.textContent=formatTodayDate();
   document.getElementById('week-pill').textContent=formatWeek(weekKey);
   document.getElementById('week-pill2').textContent=formatWeek(weekKey);
   document.title=`${dn} · The Back Office`;
@@ -135,9 +138,9 @@ function handleProfilePic(input){
   reader.onload=async e=>{
     const picData=e.target.result;
     const imgHtml=`<img src="${picData}" alt="profile" style="width:100%;height:100%;object-fit:cover;border-radius:4px;"/>`;
-    // Show preview immediately in sidebar + profile tab big avatar
+    // Show preview immediately in topbar avatar + profile tab big avatar
     const av=document.getElementById('sb-avatar');
-    av.innerHTML=imgHtml;
+    if(av)av.innerHTML=imgHtml;
     const bigAv=document.getElementById('profile-big-avatar');
     if(bigAv)bigAv.innerHTML=imgHtml;
     try{
@@ -262,22 +265,22 @@ function getMgrDisplay(){return rawName.trim().charAt(0).toUpperCase()+rawName.t
 
 function updateSidebarProfile(){
   if(!_myProfile) return;
-
-  // City line
-  const cityEl = document.getElementById('sb-city');
-  if(cityEl){
-    if(_myProfile.city){ cityEl.innerHTML = SVG.pin+' '+esc(_myProfile.city); cityEl.style.display=''; }
-    else { cityEl.textContent=''; cityEl.style.display='none'; }
-  }
-
-  // Campaign chips
-  const campEl = document.getElementById('sb-campaigns');
-  if(campEl){
+  // Update topbar role subtitle from first campaign or generic label
+  const roleEl = document.getElementById('tb-role');
+  if(roleEl){
     const assignedIds = _myProfile.campaigns || [];
-    const assignedNames = (_myClients||[]).filter(c=>assignedIds.includes(c.id)).map(c=>c.fullName);
-    campEl.innerHTML = assignedNames.map(n=>`<span style="display:inline-block;font-size:9px;font-weight:600;padding:1px 6px;border-radius:10px;background:rgba(15,118,110,.12);color:#0f766e;border:1px solid rgba(15,118,110,.2);">${esc(n)}</span>`).join('');
-    campEl.style.display = assignedNames.length ? 'flex' : 'none';
+    const firstClient = (_myClients||[]).find(c=>assignedIds.includes(c.id));
+    roleEl.textContent = firstClient ? firstClient.campaign+' Manager' : 'Field Manager';
   }
+}
+
+// Format today as "14th Aug 2023"
+function formatTodayDate(){
+  const d=new Date();
+  const day=d.getDate();
+  const months=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const sfx=day===1||day===21||day===31?'st':day===2||day===22?'nd':day===3||day===23?'rd':'th';
+  return`${day}${sfx} ${months[d.getMonth()]} ${d.getFullYear()}`;
 }
 
 // ── HOME ──────────────────────────────────────────────
@@ -2650,10 +2653,15 @@ else{checkAuth();}
 // ── Manager Notifications ─────────────────────────────
 function updateNotifBadge(){
   const unread=managerNotifs.filter(n=>!n.readAt).length;
+  // Update topbar bell badge
+  const tbBadge=document.getElementById('tb-notif-badge');
+  if(tbBadge){
+    if(unread>0){tbBadge.textContent=unread>99?'99+':String(unread);tbBadge.style.display='';}
+    else{tbBadge.style.display='none';}
+  }
+  // Keep old sidebar badge in sync for any JS that still references it
   const badge=document.getElementById('notif-badge');
-  if(!badge)return;
-  if(unread>0){badge.textContent=unread>99?'99+':String(unread);badge.style.display='';}
-  else{badge.style.display='none';}
+  if(badge){badge.textContent=String(unread);}
 }
 
 function renderManagerNotifs(){
@@ -2684,6 +2692,55 @@ async function markAllNotifsRead(){
 // ══════════════════════════════════════════════════════
 // REP SCORECARD
 // ══════════════════════════════════════════════════════
+// ── Notification dropdown ─────────────────────────────
+let _notifDropdownOpen=false;
+function toggleNotifDropdown(){
+  if(_notifDropdownOpen){closeNotifDropdown();return;}
+  renderNotifDropdown();
+  document.getElementById('notif-dropdown').style.display='block';
+  _notifDropdownOpen=true;
+  setTimeout(()=>document.addEventListener('click',_notifOutsideClick,{once:true}),0);
+}
+function closeNotifDropdown(){
+  document.getElementById('notif-dropdown').style.display='none';
+  _notifDropdownOpen=false;
+}
+function _notifOutsideClick(e){
+  const dd=document.getElementById('notif-dropdown');
+  const btn=document.getElementById('tb-notif-btn');
+  if(dd&&!dd.contains(e.target)&&btn&&!btn.contains(e.target)){closeNotifDropdown();}
+  else if(_notifDropdownOpen){document.addEventListener('click',_notifOutsideClick,{once:true});}
+}
+function renderNotifDropdown(){
+  const el=document.getElementById('notif-dd-list');if(!el)return;
+  const sorted=[...managerNotifs].sort((a,b)=>(b.sentAt||'').localeCompare(a.sentAt||'')).slice(0,5);
+  if(!sorted.length){
+    el.innerHTML='<div class="notif-dd-empty">No notifications yet</div>';
+    return;
+  }
+  el.innerHTML=sorted.map(n=>{
+    const isRead=!!n.readAt;
+    const sent=n.sentAt?_timeAgo(n.sentAt):'';
+    return`<div class="notif-dd-item${isRead?'':' unread'}">
+      ${!isRead?'<div class="notif-dd-dot"></div>':''}
+      <div class="notif-dd-item-title">${esc(n.title)}</div>
+      ${n.message?`<div class="notif-dd-item-msg">${esc(n.message.length>80?n.message.slice(0,80)+'…':n.message)}</div>`:''}
+      <div class="notif-dd-item-time">${sent}</div>
+    </div>`;
+  }).join('');
+}
+function _timeAgo(iso){
+  try{
+    const diff=(Date.now()-new Date(iso).getTime())/1000;
+    if(diff<60)return'Just now';
+    if(diff<3600)return Math.floor(diff/60)+'m ago';
+    if(diff<86400)return Math.floor(diff/3600)+'h ago';
+    if(diff<604800)return Math.floor(diff/86400)+'d ago';
+    return new Date(iso).toLocaleDateString('en-GB',{day:'numeric',month:'short'});
+  }catch(e){return'';}
+}
+// ─────────────────────────────────────────────────────
+
 let repNotes={};// keyed by rep id, array of {text,date}
 
 function openScorecard(repId){
