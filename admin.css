@@ -196,7 +196,7 @@ pre { background: var(--surface2); border: 1px solid var(--border); border-radiu
 .dyn-mgr-label { font-size: 12px; font-weight: 700; color: var(--accent); text-transform: capitalize; }
 
 /* ── Admin Login ── */
-.admin-login-wrap { position:fixed; inset:0; background:var(--surface); display:flex; align-items:center; justify-content:center; z-index:2000; }
+.admin-login-wrap { position:fixed; inset:0; background:#ffffff; display:flex; align-items:center; justify-content:center; z-index:2000; }
 .admin-login-box { background:transparent; padding:36px 40px; width:100%; max-width:380px; }
 .admin-login-logo { font-size:12px; font-weight:700; color:var(--muted); letter-spacing:.1em; text-transform:uppercase; margin-bottom:28px; text-align:center; }
 .admin-login-logo span { color:var(--accent); }
@@ -204,7 +204,7 @@ pre { background: var(--surface2); border: 1px solid var(--border); border-radiu
 .admin-login-sub { font-size:13px; color:var(--muted); margin-bottom:24px; text-align:center; }
 .admin-login-field { display:flex; flex-direction:column; gap:5px; margin-bottom:14px; }
 .admin-login-lbl { font-size:11px; font-weight:600; color:var(--muted); letter-spacing:.06em; text-transform:uppercase; }
-.admin-login-input { border:1px solid var(--border2); background:var(--surface2); color:var(--text); font-family:var(--font); font-size:14px; padding:10px 13px; border-radius:var(--radius-sm); outline:none; width:100%; transition:border-color .15s; }
+.admin-login-input { border:1px solid var(--border); background:#ffffff; color:var(--text); font-family:var(--font); font-size:14px; padding:10px 13px; border-radius:var(--radius-sm); outline:none; width:100%; transition:border-color .15s; }
 .admin-login-input:focus { border-color:var(--accent); }
 .admin-login-btn { width:100%; background:var(--accent); border:none; color:#fff; font-family:var(--font); font-size:14px; font-weight:600; padding:12px; border-radius:var(--radius-sm); cursor:pointer; transition:opacity .15s; margin-top:6px; }
 .admin-login-btn:hover { opacity:.88; }
