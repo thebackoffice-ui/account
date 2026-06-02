@@ -133,19 +133,15 @@
         </div>
 
         <!-- Search + filter pills -->
-        <div style="display:flex;gap:8px;align-items:center;margin-bottom:14px;flex-wrap:wrap;">
-          <input id="rep-search" type="text" placeholder="Search by name or position…" class="field-input" style="max-width:260px;margin-bottom:0;" oninput="filterReps()"/>
-          <div id="rep-filter-pills" style="display:flex;gap:5px;flex-wrap:wrap;"></div>
-        </div>
-
-        <!-- Team Roster label -->
-        <div style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:10px;">Team Roster</div>
-
-        <!-- Rep list — individual cards rendered by JS -->
-        <div id="rep-list"></div>
-
-      </div></div>
-    </div>
+<div class="reps-search-row" style="position:relative;margin-bottom:10px;">
+  <svg style="position:absolute;left:12px;top:50%;transform:translateY(-50%);pointer-events:none;color:var(--subtle);" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+  <input id="rep-search" type="text" placeholder="Search by name or position…" class="reps-search-input" oninput="filterReps()"/>
+</div>
+<div id="rep-filter-pills" class="reps-filter-row"></div>
+<!-- Team Roster label -->
+<div style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:10px;">Team Roster</div>
+<!-- Rep list — individual cards rendered by JS -->
+<div id="rep-list"></div>
 
     <!-- WEEKLY UPDATE TAB -->
     <div class="tab-content" id="ptab-weekly">
