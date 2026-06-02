@@ -4544,7 +4544,7 @@ async function dpDownloadPDF(){
 <title>${dn} Daily Planner — ${dateStr}</title>
 <style>
 ${styles}
-body{margin:0;padding:20px;background:#f8fafc;font-family:system-ui,sans-serif;}
+body{margin:0;padding:20px;background:#f8fafc;font-family:'DM Sans',sans-serif;}
 .dp-page{max-width:680px;margin:0 auto 24px;background:white;border:1px solid #e5e7eb;border-radius:10px;box-shadow:0 2px 12px rgba(0,0,0,.08);overflow:hidden;width:100%;}
 .dp-page-a4-wrap{max-width:680px;margin:0 auto;}
 textarea,input{background:white!important;border-color:#e5e7eb!important;}
