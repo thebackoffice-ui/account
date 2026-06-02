@@ -937,7 +937,7 @@ select.wr-input{cursor:pointer;appearance:none;}
 .dp-shared-badge{font-size:10px;font-weight:700;background:var(--accent-soft);color:var(--accent);border:1px solid var(--accent-border);padding:2px 7px;border-radius:20px;}
 .dp-pages-wrap{flex:1;overflow-y:auto;padding:28px 24px;display:flex;flex-direction:column;gap:20px;background:var(--bg);align-items:center;}.dp-page-a4-wrap{width:100%;max-width:680px;display:flex;flex-direction:column;gap:20px;}
 /* Page card */
-.dp-page{background:var(--surface);border:1px solid var(--border);border-radius:10px;box-shadow:0 2px 16px rgba(0,0,0,.10),0 1px 4px rgba(0,0,0,.06);overflow:hidden;width:100%;}
+.dp-page{background:var(--surface);border:1px solid var(--border);border-radius:10px;box-shadow:var(--niond-shadow);overflow:hidden;width:100%;}
 .dp-page-hdr{background:var(--accent);color:#fff;padding:10px 16px;display:flex;align-items:center;justify-content:space-between;}
 .dp-page-hdr-title{font-size:13px;font-weight:700;letter-spacing:.03em;}
 .dp-page-hdr-date{font-size:11px;opacity:.8;}
@@ -1283,8 +1283,8 @@ select.wr-input{cursor:pointer;appearance:none;}
   --niond-purple-soft: rgba(15,118,110,0.08);
   --niond-amber: #f59e0b;
   /* Softer, consistent shadows matching dashboard */
-  --niond-shadow: 0 1px 3px rgba(0,0,0,0.05), 0 1px 2px rgba(0,0,0,0.03);
-  --niond-shadow-md: 0 4px 12px rgba(0,0,0,0.07), 0 1px 3px rgba(0,0,0,0.04);
+  --niond-shadow: 0 1px 3px rgba(100,120,120,0.06), 0 1px 2px rgba(100,120,120,0.04);
+  --niond-shadow-md: 0 4px 12px rgba(100,120,120,0.08), 0 1px 3px rgba(100,120,120,0.05);
   --niond-r: 10px;
   --niond-rsm: 6px;
 
