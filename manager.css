@@ -1188,7 +1188,7 @@ select.wr-input{cursor:pointer;appearance:none;}
 .hg-row { display: grid; gap: 14px; margin-bottom: 20px; }
 .hg-stats  { grid-template-columns: repeat(4, 1fr); }
 .hg-main   { grid-template-columns: 1fr 220px 260px; align-items: start; }
-.hg-bottom { grid-template-columns: 1fr 268px; align-items: start; }
+.hg-bottom { grid-template-columns: minmax(0, 780px) 268px; align-items: start; }
 #home-grid { max-width: 1400px; }
 
 @media (max-width: 768px) {
