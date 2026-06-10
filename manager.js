@@ -56,6 +56,11 @@ var rawName=params.get('name')||'';
 var managerName=rawName.trim().toLowerCase().replace(/[^a-z0-9_-]/g,'');
 const weekKey=getWeekKey(new Date());
 
+// ── Guest / share-link mode ────────────────────────────
+const guestMode = params.get('plannerGuest')==='1';
+const guestGroupKey = (()=>{ try{ const g=params.get('gk'); return g?atob(g):null; }catch(e){return null;} })();
+const guestToken = params.get('gt')||'';
+
 // ── LOGIN ──────────────────────────────────────────────
 async function doLogin(){
   const input=document.getElementById('login-pw');
@@ -2612,7 +2617,7 @@ function lbRender(){
 }
 
 // ── Util ──────────────────────────────────────────────
-function getMgrToken(){return sessionStorage.getItem('tt_mgr_token_'+managerName)||'';}
+function getMgrToken(){if(guestMode)return guestToken;return sessionStorage.getItem('tt_mgr_token_'+managerName)||'';}
 async function api(p){
   const body=JSON.stringify({token:getMgrToken(),...p});
   // Content-Type: text/plain = CORS simple request, no preflight needed.
@@ -2642,8 +2647,13 @@ window.addEventListener('resize',()=>{
   },150);
 });
 
-if(!managerName){document.getElementById('login-screen').innerHTML='<div class="login-box"><div class="login-logo">The <span>Back Office</span></div><h2 style="font-size:18px;margin-bottom:8px;text-align:center;">No manager specified</h2><p style="color:var(--muted);font-size:13px;text-align:center;">Add your name to the URL: manager.html?name=sarah</p></div>';}
-else{checkAuth();}
+if(guestMode && guestGroupKey && guestToken){
+  dpGuestInit();
+} else if(!managerName){
+  document.getElementById('login-screen').innerHTML='<div class="login-box"><div class="login-logo">The <span>Back Office</span></div><h2 style="font-size:18px;margin-bottom:8px;text-align:center;">No manager specified</h2><p style="color:var(--muted);font-size:13px;text-align:center;">Add your name to the URL: manager.html?name=sarah</p></div>';
+} else {
+  checkAuth();
+}
 
 
 
@@ -3522,6 +3532,86 @@ document.addEventListener('DOMContentLoaded',()=>{notesInit();});
 ══════════════════════════════════════════ */
 let dpActiveDayIdx = 0;       // 0=Mon … 4=Fri
 let dpData = {};              // { 'YYYY-MM-DD': { daily:{…}, events:[…] } }
+// ── Planner guest entry point ──────────────────────────
+async function dpGuestInit(){
+  // Validate the guest token before showing anything
+  const loginScreen = document.getElementById('login-screen');
+  const appShell = document.getElementById('app-shell');
+  try {
+    const res = await api({action:'validatePlannerToken', guestToken, groupKey:guestGroupKey});
+    if(!res||!res.ok){
+      loginScreen.innerHTML=`<div class="login-box"><div class="login-logo">The <span>Back Office</span></div><h2 style="font-size:18px;margin-bottom:8px;text-align:center;">Link expired or invalid</h2><p style="color:var(--muted);font-size:13px;text-align:center;">Ask the manager to share a new link.</p></div>`;
+      return;
+    }
+  } catch(e) {
+    loginScreen.innerHTML=`<div class="login-box"><div class="login-logo">The <span>Back Office</span></div><h2 style="font-size:18px;margin-bottom:8px;text-align:center;">Could not verify link</h2><p style="color:var(--muted);font-size:13px;text-align:center;">Check your connection and try again.</p></div>`;
+    return;
+  }
+
+  // Hide login, show app in guest mode (planner only)
+  loginScreen.style.display = 'none';
+  appShell.style.display = 'flex';
+  // Hide sidebar entirely for guests
+  const sidebar = appShell.querySelector('.sidebar');
+  if(sidebar) sidebar.style.display = 'none';
+  // Show planner tab only
+  document.querySelectorAll('.tab-content').forEach(el=>el.classList.remove('active'));
+  const plannerTab = document.getElementById('ptab-planner');
+  if(plannerTab) plannerTab.classList.add('active');
+  // Guest header in planner topbar
+  const topbarTitle = plannerTab.querySelector('.topbar-title');
+  if(topbarTitle) topbarTitle.textContent = 'Daily Planner — Guest View';
+  // Hide the hamburger menu button (no sidebar for guests)
+  const menuBtn = plannerTab.querySelector('.mob-menu-btn');
+  if(menuBtn) menuBtn.style.display = 'none';
+
+  // Set up planner state using the groupKey from the URL
+  dpGroupKey = guestGroupKey;
+  dpGroupMembers = [];
+  dpAdminAssigned = true;
+
+  // Init the day tabs and load data
+  const dates = dpGetWeekDates();
+  const todayStr = dpLocalDateStr(new Date());
+  const todayIdx = dates.indexOf(todayStr);
+  if(todayIdx >= 0) dpActiveDayIdx = todayIdx;
+  dpInitDone = true;
+
+  const pill = document.getElementById('dp-week-pill');
+  if(pill) pill.textContent = `w/c ${dpDateLabel(dates[0]).replace(/^[A-Za-z]+,? /,'')}`;
+  const tabsEl = document.getElementById('dp-day-tabs');
+  const days = ['Mon','Tue','Wed','Thu','Fri'];
+  tabsEl.innerHTML = days.map((d,i)=>`<button class="dp-day-tab ${i===dpActiveDayIdx?'active':''}" onclick="dpSwitchDay(${i})">${d} <span style="font-weight:400;opacity:.7;">${dpDateLabel(dates[i]).split(' ').slice(1).join(' ')}</span></button>`).join('');
+
+  // Load planner data and start live poll
+  try {
+    const results = await Promise.all(dates.map(date=>api({action:'getDailyPlanner',manager:dpGroupKey,date,guestToken})));
+    results.forEach((res,i)=>{
+      if(res.data){try{dpData[dates[i]]=JSON.parse(res.data);}catch(e){dpData[dates[i]]=dpBlank();}}
+      else{if(!dpData[dates[i]])dpData[dates[i]]=dpBlank();}
+    });
+  } catch(e) {
+    dates.forEach(d=>{if(!dpData[d])dpData[d]=dpBlank();});
+  }
+  dpRenderDay();
+  dpStartPoll();
+}
+
+async function dpShareLink(){
+  if(!dpGroupKey){showToast('Planner not set up yet','error');return;}
+  try{
+    const res = await api({action:'createPlannerToken',manager:managerName,groupKey:dpGroupKey});
+    if(!res||!res.token){showToast('Could not generate link','error');return;}
+    const gk = btoa(dpGroupKey);
+    const base = location.origin + location.pathname;
+    const url = `${base}?name=${encodeURIComponent(managerName)}&plannerGuest=1&gk=${encodeURIComponent(gk)}&gt=${encodeURIComponent(res.token)}`;
+    await navigator.clipboard.writeText(url);
+    showToast('Share link copied to clipboard ✓','success',3500);
+  }catch(e){
+    showToast('Could not copy link — try again','error');
+  }
+}
+
 let dpSharedWith = [];        // manager names in my planner group
 let dpSharedFrom = [];        // (legacy — kept for compat)
 let dpSaveDirtyTimer = null;
@@ -3586,6 +3676,9 @@ async function dpFetchGroup(){
   dpGroupKey = 'group::' + (prefRes.groupId||prefRes.groupName||dpGroupMembers.join(','));
   const badge = document.getElementById('dp-shared-badge');
   if(badge) badge.style.display = dpSharedWith.length?'':'none';
+  // Show share button for managers with an assigned group
+  const shareBtn = document.getElementById('dp-share-btn');
+  if(shareBtn && !guestMode) shareBtn.style.display = '';
   return true;
 }
 

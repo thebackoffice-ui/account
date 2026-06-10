@@ -1,6 +1,6 @@
 
 // ── Apps Script source ─────────────────────────────────
-const APPS_SCRIPT_VERSION = '2.6.0';
+const APPS_SCRIPT_VERSION = '2.7.0';
 const APPS_SCRIPT = `// The Back Office — Google Apps Script v${APPS_SCRIPT_VERSION}
 // Extensions > Apps Script > paste > Deploy as Web App (Anyone)
 
@@ -331,6 +331,17 @@ function doPost(e) {
     for(let i=rows.length-1;i>=1;i--){if(rows[i][0]===data.id){th.deleteRow(i+1);break;}} result={ok:true};
 
   } else if (data.action === 'saveDailyPlanner') {
+    // Allow guest tokens for planner saves
+    if(!data.token||!verifyToken(data.token,'manager')){
+      if(data.guestToken){
+        const pts=getOrCreate('planner_tokens',['token','groupKey','manager','createdAt']);
+        const ptRows=pts.getDataRange().getValues().slice(1);
+        const validGuest=ptRows.some(r=>String(r[0])===String(data.guestToken)&&String(r[1])===String(data.manager));
+        if(!validGuest)return ContentService.createTextOutput(JSON.stringify({ok:false,error:'Invalid guest token'})).setMimeType(ContentService.MimeType.JSON);
+      } else if(!verifyToken(data.token||'','admin')){
+        return ContentService.createTextOutput(JSON.stringify({ok:false,error:'Unauthorised'})).setMimeType(ContentService.MimeType.JSON);
+      }
+    }
     const ph=getOrCreate('daily_planner',['manager','date','data','updatedAt']);
     const rows=ph.getDataRange().getValues(); let f=false;
     for(let i=1;i<rows.length;i++){
@@ -342,9 +353,32 @@ function doPost(e) {
     result={ok:true};
 
   } else if (data.action === 'getDailyPlanner') {
+    // Allow guest tokens for planner reads
+    if(data.guestToken){
+      const pts=getOrCreate('planner_tokens',['token','groupKey','manager','createdAt']);
+      const ptRows=pts.getDataRange().getValues().slice(1);
+      const validGuest=ptRows.some(r=>String(r[0])===String(data.guestToken)&&String(r[1])===String(data.manager));
+      if(!validGuest)return ContentService.createTextOutput(JSON.stringify({ok:false,error:'Invalid guest token'})).setMimeType(ContentService.MimeType.JSON);
+    }
     const ph=getOrCreate('daily_planner',['manager','date','data','updatedAt']);
     const row=ph.getDataRange().getValues().slice(1).find(r=>r[0]===data.manager&&safeDate(r[1])===data.date);
     result={data:row?String(row[2]||''):null};
+
+  } else if (data.action === 'createPlannerToken') {
+    if(!verifyToken(data.token||'','manager')&&!verifyToken(data.token||'','admin'))return ContentService.createTextOutput(JSON.stringify({ok:false,error:'Unauthorised'})).setMimeType(ContentService.MimeType.JSON);
+    const pts=getOrCreate('planner_tokens',['token','groupKey','manager','createdAt']);
+    // Remove any existing tokens for this manager+groupKey first
+    const ptRows=pts.getDataRange().getValues();
+    for(let i=ptRows.length-1;i>=1;i--){if(String(ptRows[i][2])===String(data.manager)&&String(ptRows[i][1])===String(data.groupKey)){pts.deleteRow(i+1);}}
+    const token=Utilities.getUuid().replace(/-/g,'').slice(0,32);
+    pts.appendRow([token,data.groupKey,data.manager,new Date().toISOString()]);
+    result={ok:true,token};
+
+  } else if (data.action === 'validatePlannerToken') {
+    const pts=getOrCreate('planner_tokens',['token','groupKey','manager','createdAt']);
+    const ptRows=pts.getDataRange().getValues().slice(1);
+    const valid=ptRows.some(r=>String(r[0])===String(data.guestToken)&&String(r[1])===String(data.groupKey));
+    result={ok:valid};
 
   } else if (data.action === 'savePlannerGroups') {
     // Admin saves group assignments: [{id, name, members:[]}]
@@ -864,11 +898,12 @@ function changeWeek(dir) {
 }
 
 // ── Submission history chart ─────────────────────────────
+let _chartResizeObserver = null;
+
 function renderSubmissionChart() {
   const svg = document.getElementById('submission-chart');
   const card = document.getElementById('chart-card');
   if (!svg || !managers.length) return;
-  // Build last 12 weeks of data from allSubs
   const weeks = allWeeks.slice(-12);
   if (weeks.length < 2) { if(card) card.style.display='none'; return; }
   if(card) card.style.display='block';
@@ -877,13 +912,15 @@ function renderSubmissionChart() {
     const submitted = new Set(allSubs.filter(s=>s.week===w).map(s=>s.manager)).size;
     return { week: w, pct: total ? Math.round((submitted/total)*100) : 0, submitted, total };
   });
-  const W = 12, gap = 4, h = 60, pad = 20;
-  const barW = Math.max(8, Math.floor((600 - pad*2 - gap*(weeks.length-1)) / weeks.length));
-  const svgW = pad*2 + barW*weeks.length + gap*(weeks.length-1);
-  svg.setAttribute('viewBox', `0 0 ${svgW} ${h+16}`);
+  const gap = 4, h = 60, pad = 20;
+  const containerW = svg.parentElement ? svg.parentElement.clientWidth || 600 : 600;
+  const availW = Math.max(100, containerW - pad * 2);
+  const barW = Math.max(8, Math.floor((availW - gap * (weeks.length - 1)) / weeks.length));
+  const svgW = pad * 2 + barW * weeks.length + gap * (weeks.length - 1);
+  svg.setAttribute('viewBox', `0 0 ${svgW} ${h + 16}`);
   svg.innerHTML = data.map((d, i) => {
-    const x = pad + i*(barW+gap);
-    const barH = Math.max(3, Math.round((d.pct/100)*h));
+    const x = pad + i * (barW + gap);
+    const barH = Math.max(3, Math.round((d.pct / 100) * h));
     const y = h - barH;
     const isNow = d.week === currentWeek;
     const fill = isNow ? 'var(--accent)' : d.pct===100 ? 'var(--success)' : d.pct===0 ? 'var(--border2)' : 'var(--accent-soft)';
@@ -893,9 +930,14 @@ function renderSubmissionChart() {
       <rect x="${x}" y="${y}" width="${barW}" height="${barH}" rx="3" fill="${fill}" stroke="${stroke}" stroke-width="1">
         <title>${d.week}: ${d.submitted}/${d.total} submitted (${d.pct}%)</title>
       </rect>
-      <text x="${x+barW/2}" y="${h+12}" text-anchor="middle" font-size="8" fill="var(--muted)" font-family="var(--font)">${label}</text>
+      <text x="${x + barW / 2}" y="${h + 12}" text-anchor="middle" font-size="8" fill="var(--muted)" font-family="var(--font)">${label}</text>
     </g>`;
   }).join('');
+
+  if (!_chartResizeObserver && svg.parentElement) {
+    _chartResizeObserver = new ResizeObserver(() => renderSubmissionChart());
+    _chartResizeObserver.observe(svg.parentElement);
+  }
 }
 
 // ── Overview ───────────────────────────────────────────
