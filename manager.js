@@ -191,6 +191,7 @@ function avStyle(name,pos){
 let roster=[],weekLeavers=new Set(),allReports=[],weekSubmitted=false,calEvents=[],announcement=null,notes='',lastWeekCount=0,ackDone=false,savedReviews=[],allPayData=[],managerNotifs=[];
 let wireByWeekGlobal=null;
 let _prodChartResizeObserver=null;
+let _ptcResizeObserver=null;
 let _myProfile=null,_myClients=[];
 
 async function loadAll(){
@@ -443,7 +444,7 @@ function renderHome(){
             <div style="width:10px;height:10px;border-radius:50%;background:#26C6B0;"></div>Manager Take
           </div>
         </div>
-        <canvas id="prod-chart-canvas" height="88" style="width:100%;display:block;"></canvas>
+        <canvas id="prod-chart-canvas" style="width:100%;height:160px;display:block;"></canvas>
       </div>
 
       <!-- This Week's Links — each as its own card -->
@@ -585,13 +586,11 @@ function drawProdChart(wireByWeek){
   const canvas=document.getElementById('prod-chart-canvas');
   if(!canvas)return;
   const dpr=window.devicePixelRatio||1;
-  const parent=canvas.parentElement;
-  const W=(parent?parent.clientWidth:0)||600;
-  const H=Math.max(parent&&parent.clientHeight?parent.clientHeight-120:180,160);
+  const rect=canvas.getBoundingClientRect();
+  const W=Math.round(rect.width)||600;
+  const H=Math.round(rect.height)||160;
   canvas.width=W*dpr;
   canvas.height=H*dpr;
-  canvas.style.width=W+'px';
-  canvas.style.height=H+'px';
   const ctx=canvas.getContext('2d');
   ctx.scale(dpr,dpr);
 
@@ -662,10 +661,9 @@ function drawProdChart(wireByWeek){
     }
   });
 
-  if(!_prodChartResizeObserver&&canvas.parentElement){
-    _prodChartResizeObserver=new ResizeObserver(()=>{if(wireByWeekGlobal!==null)drawProdChart(wireByWeekGlobal);});
-    _prodChartResizeObserver.observe(canvas.parentElement);
-  }
+  if(_prodChartResizeObserver)_prodChartResizeObserver.disconnect();
+  _prodChartResizeObserver=new ResizeObserver(()=>{if(wireByWeekGlobal!==null)drawProdChart(wireByWeekGlobal);});
+  _prodChartResizeObserver.observe(canvas);
 }
 
 
@@ -2949,12 +2947,10 @@ function rptPtcRenderChart(){
 
 function ptcDraw(canvas,data){
   const dpr=window.devicePixelRatio||1;
-  const wrap=canvas.parentElement;
-  const rect=wrap.getBoundingClientRect();
-  const W=Math.floor(rect.width)||wrap.offsetWidth||700;
+  const rect=canvas.getBoundingClientRect();
+  const W=Math.floor(rect.width)||700;
   const H=Math.floor(rect.height)||240;
   canvas.width=W*dpr;canvas.height=H*dpr;
-  canvas.style.width=W+'px';canvas.style.height=H+'px';
   const ctx=canvas.getContext('2d');
   ctx.scale(dpr,dpr);
   const dark=isDark();
@@ -3062,6 +3058,10 @@ function ptcDraw(canvas,data){
     ctx.fillStyle=dark?'rgba(38,198,176,.5)':'rgba(15,150,130,.45)';
     ctx.fillText('← Take',padL+iW,padT-8);
   }
+
+  if(_ptcResizeObserver)_ptcResizeObserver.disconnect();
+  _ptcResizeObserver=new ResizeObserver(()=>rptPtcRenderChart());
+  _ptcResizeObserver.observe(canvas);
 }
 
 // ══════════════════════════════════════════════════════
