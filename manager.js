@@ -190,8 +190,7 @@ function avStyle(name,pos){
 // ── State ──────────────────────────────────────────────
 let roster=[],weekLeavers=new Set(),allReports=[],weekSubmitted=false,calEvents=[],announcement=null,notes='',lastWeekCount=0,ackDone=false,savedReviews=[],allPayData=[],managerNotifs=[];
 let wireByWeekGlobal=null;
-let _prodChartResizeObserver=null;
-let _ptcResizeObserver=null;
+let _dashResizeTimer=null;
 let _myProfile=null,_myClients=[];
 
 async function loadAll(){
@@ -428,7 +427,7 @@ function renderHome(){
     <div class="hg-row hg-main">
 
       <!-- Production History -->
-      <div style="background:#fff;border-radius:10px;padding:22px 24px;box-shadow:var(--niond-shadow);align-self:stretch;">
+      <div style="background:#fff;border-radius:10px;padding:22px 24px;box-shadow:var(--niond-shadow);">
         <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:16px;">
           <div>
             <div style="font-size:17px;font-weight:800;color:var(--text);letter-spacing:-.02em;">Production History</div>
@@ -444,7 +443,7 @@ function renderHome(){
             <div style="width:10px;height:10px;border-radius:50%;background:#26C6B0;"></div>Manager Take
           </div>
         </div>
-        <canvas id="prod-chart-canvas" style="width:100%;height:160px;display:block;"></canvas>
+        <canvas id="prod-chart-canvas" style="width:100%;display:block;"></canvas>
       </div>
 
       <!-- This Week's Links — each as its own card -->
@@ -586,11 +585,11 @@ function drawProdChart(wireByWeek){
   const canvas=document.getElementById('prod-chart-canvas');
   if(!canvas)return;
   const dpr=window.devicePixelRatio||1;
-  const rect=canvas.getBoundingClientRect();
-  const W=Math.round(rect.width)||600;
-  const H=Math.round(rect.height)||160;
+  const W=canvas.offsetWidth||600;
+  const H=160;
   canvas.width=W*dpr;
   canvas.height=H*dpr;
+  canvas.style.height=H+'px';
   const ctx=canvas.getContext('2d');
   ctx.scale(dpr,dpr);
 
@@ -661,12 +660,6 @@ function drawProdChart(wireByWeek){
     }
   });
 
-  const chartCard=canvas.parentElement;
-  if(_prodChartResizeObserver)_prodChartResizeObserver.disconnect();
-  if(chartCard){
-    _prodChartResizeObserver=new ResizeObserver(()=>{if(wireByWeekGlobal!==null)requestAnimationFrame(()=>drawProdChart(wireByWeekGlobal));});
-    _prodChartResizeObserver.observe(chartCard);
-  }
 }
 
 
@@ -2649,6 +2642,11 @@ async function api(p){
 function showToast(msg,type,dur){const t=document.getElementById('toast');t.textContent=msg;t.className=`toast ${type} show`;setTimeout(()=>t.className='toast',dur||3000);}
 window.addEventListener('resize',()=>{
   if(document.getElementById('ptab-map').classList.contains('active'))renderEdges();
+  clearTimeout(_dashResizeTimer);
+  _dashResizeTimer=setTimeout(()=>{
+    if(wireByWeekGlobal!==null&&document.getElementById('prod-chart-canvas'))drawProdChart(wireByWeekGlobal);
+    if(document.getElementById('rpt-ptc-canvas'))rptPtcRenderChart();
+  },150);
 });
 
 if(!managerName){document.getElementById('login-screen').innerHTML='<div class="login-box"><div class="login-logo">The <span>Back Office</span></div><h2 style="font-size:18px;margin-bottom:8px;text-align:center;">No manager specified</h2><p style="color:var(--muted);font-size:13px;text-align:center;">Add your name to the URL: manager.html?name=sarah</p></div>';}
@@ -2950,10 +2948,11 @@ function rptPtcRenderChart(){
 
 function ptcDraw(canvas,data){
   const dpr=window.devicePixelRatio||1;
-  const rect=canvas.getBoundingClientRect();
-  const W=Math.floor(rect.width)||700;
-  const H=Math.floor(rect.height)||240;
+  const wrap=canvas.parentElement;
+  const W=(wrap?wrap.clientWidth:0)||700;
+  const H=(wrap?wrap.clientHeight:0)||240;
   canvas.width=W*dpr;canvas.height=H*dpr;
+  canvas.style.width=W+'px';canvas.style.height=H+'px';
   const ctx=canvas.getContext('2d');
   ctx.scale(dpr,dpr);
   const dark=isDark();
@@ -3062,12 +3061,6 @@ function ptcDraw(canvas,data){
     ctx.fillText('← Take',padL+iW,padT-8);
   }
 
-  const ptcCard=canvas.parentElement;
-  if(_ptcResizeObserver)_ptcResizeObserver.disconnect();
-  if(ptcCard){
-    _ptcResizeObserver=new ResizeObserver(()=>requestAnimationFrame(()=>rptPtcRenderChart()));
-    _ptcResizeObserver.observe(ptcCard);
-  }
 }
 
 // ══════════════════════════════════════════════════════
