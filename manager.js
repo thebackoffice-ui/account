@@ -3534,17 +3534,10 @@ let dpActiveDayIdx = 0;       // 0=Mon … 4=Fri
 let dpData = {};              // { 'YYYY-MM-DD': { daily:{…}, events:[…] } }
 // ── Planner guest entry point ──────────────────────────
 async function dpGuestInit(){
-  // Validate the guest token before showing anything
   const loginScreen = document.getElementById('login-screen');
   const appShell = document.getElementById('app-shell');
-  try {
-    const res = await api({action:'validatePlannerToken', guestToken, groupKey:guestGroupKey});
-    if(!res||!res.ok){
-      loginScreen.innerHTML=`<div class="login-box"><div class="login-logo">The <span>Back Office</span></div><h2 style="font-size:18px;margin-bottom:8px;text-align:center;">Link expired or invalid</h2><p style="color:var(--muted);font-size:13px;text-align:center;">Ask the manager to share a new link.</p></div>`;
-      return;
-    }
-  } catch(e) {
-    loginScreen.innerHTML=`<div class="login-box"><div class="login-logo">The <span>Back Office</span></div><h2 style="font-size:18px;margin-bottom:8px;text-align:center;">Could not verify link</h2><p style="color:var(--muted);font-size:13px;text-align:center;">Check your connection and try again.</p></div>`;
+  if(!guestGroupKey){
+    loginScreen.innerHTML=`<div class="login-box"><div class="login-logo">The <span>Back Office</span></div><h2 style="font-size:18px;margin-bottom:8px;text-align:center;">Invalid link</h2><p style="color:var(--muted);font-size:13px;text-align:center;">Ask the manager to share a new link.</p></div>`;
     return;
   }
 

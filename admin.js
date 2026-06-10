@@ -1,6 +1,6 @@
 
 // ── Apps Script source ─────────────────────────────────
-const APPS_SCRIPT_VERSION = '2.7.0';
+const APPS_SCRIPT_VERSION = '2.7.1';
 const APPS_SCRIPT = `// The Back Office — Google Apps Script v${APPS_SCRIPT_VERSION}
 // Extensions > Apps Script > paste > Deploy as Web App (Anyone)
 
@@ -365,7 +365,7 @@ function doPost(e) {
     result={data:row?String(row[2]||''):null};
 
   } else if (data.action === 'createPlannerToken') {
-    if(!verifyToken(data.token||'','manager')&&!verifyToken(data.token||'','admin'))return ContentService.createTextOutput(JSON.stringify({ok:false,error:'Unauthorised'})).setMimeType(ContentService.MimeType.JSON);
+    if(!verifyToken(data.token||'','mgr:'+String(data.manager||''))&&!verifyToken(data.token||'','admin'))return ContentService.createTextOutput(JSON.stringify({ok:false,error:'Unauthorised'})).setMimeType(ContentService.MimeType.JSON);
     const pts=getOrCreate('planner_tokens',['token','groupKey','manager','createdAt']);
     // Remove any existing tokens for this manager+groupKey first
     const ptRows=pts.getDataRange().getValues();
