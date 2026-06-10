@@ -527,7 +527,7 @@ function renderHome(){
           <button onclick="switchTab('leaderboard');setTimeout(lbInit,50);" style="background:#0f766e;color:#fff;border:none;font-family:var(--font);font-size:11px;font-weight:700;padding:7px 16px;border-radius:20px;cursor:pointer;letter-spacing:.04em;transition:opacity .15s;" onmouseover="this.style.opacity='.82'" onmouseout="this.style.opacity='1'">Full Board</button>
         </div>
         ${lbSnap.length?`
-          <div style="display:grid;grid-template-columns:40px 1fr 60px 80px;gap:0;border-bottom:1px solid var(--border);padding-bottom:8px;margin-bottom:4px;">
+          <div style="display:grid;grid-template-columns:40px 1fr minmax(80px,160px) 80px;gap:0;border-bottom:1px solid var(--border);padding-bottom:8px;margin-bottom:4px;">
             <div style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;">#</div>
             <div style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;">Agent</div>
             <div style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;">Campaign</div>
@@ -536,7 +536,7 @@ function renderHome(){
           ${lbSnap.map((r,i)=>{
             const score=(typeof lbNum!=='undefined')?lbNum(r['Week Total']):(Number(r['Week Total'])||0);
             const rankHtml=i<3?`<div style="width:28px;height:28px;display:flex;align-items:center;justify-content:center;"><img src="${LB_MEDAL_IMG[i+1]}" alt="${i+1} place medal" style="width:28px;height:28px;object-fit:contain;background:transparent!important;display:block;"></div>`:`<div style="width:28px;height:28px;background:var(--surface2);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:var(--muted);">${i+1}</div>`;
-            return`<div style="display:grid;grid-template-columns:40px 1fr 60px 80px;gap:0;padding:10px 0;border-bottom:1px solid var(--border);align-items:center;">
+            return`<div style="display:grid;grid-template-columns:40px 1fr minmax(80px,160px) 80px;gap:0;padding:10px 0;border-bottom:1px solid var(--border);align-items:center;">
               ${rankHtml}
               <div style="font-size:13px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${esc(r.Agent)}</div>
               <div style="font-size:11px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${esc(r.Campaign||'—')}</div>
