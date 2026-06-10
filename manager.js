@@ -661,9 +661,12 @@ function drawProdChart(wireByWeek){
     }
   });
 
+  const chartCard=canvas.parentElement;
   if(_prodChartResizeObserver)_prodChartResizeObserver.disconnect();
-  _prodChartResizeObserver=new ResizeObserver(()=>{if(wireByWeekGlobal!==null)drawProdChart(wireByWeekGlobal);});
-  _prodChartResizeObserver.observe(canvas);
+  if(chartCard){
+    _prodChartResizeObserver=new ResizeObserver(()=>{if(wireByWeekGlobal!==null)requestAnimationFrame(()=>drawProdChart(wireByWeekGlobal));});
+    _prodChartResizeObserver.observe(chartCard);
+  }
 }
 
 
@@ -3059,9 +3062,12 @@ function ptcDraw(canvas,data){
     ctx.fillText('← Take',padL+iW,padT-8);
   }
 
+  const ptcCard=canvas.parentElement;
   if(_ptcResizeObserver)_ptcResizeObserver.disconnect();
-  _ptcResizeObserver=new ResizeObserver(()=>rptPtcRenderChart());
-  _ptcResizeObserver.observe(canvas);
+  if(ptcCard){
+    _ptcResizeObserver=new ResizeObserver(()=>requestAnimationFrame(()=>rptPtcRenderChart()));
+    _ptcResizeObserver.observe(ptcCard);
+  }
 }
 
 // ══════════════════════════════════════════════════════
