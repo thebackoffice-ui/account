@@ -190,6 +190,7 @@ function avStyle(name,pos){
 // ── State ──────────────────────────────────────────────
 let roster=[],weekLeavers=new Set(),allReports=[],weekSubmitted=false,calEvents=[],announcement=null,notes='',lastWeekCount=0,ackDone=false,savedReviews=[],allPayData=[],managerNotifs=[];
 let wireByWeekGlobal=null;
+let _prodChartResizeObserver=null;
 let _myProfile=null,_myClients=[];
 
 async function loadAll(){
@@ -584,8 +585,9 @@ function drawProdChart(wireByWeek){
   const canvas=document.getElementById('prod-chart-canvas');
   if(!canvas)return;
   const dpr=window.devicePixelRatio||1;
-  const W=canvas.offsetWidth||canvas.parentElement.offsetWidth||600;
-  const H=Math.max(canvas.offsetHeight||0, canvas.parentElement.offsetHeight ? canvas.parentElement.offsetHeight - 120 : 180, 160);
+  const parent=canvas.parentElement;
+  const W=(parent?parent.clientWidth:0)||600;
+  const H=Math.max(parent&&parent.clientHeight?parent.clientHeight-120:180,160);
   canvas.width=W*dpr;
   canvas.height=H*dpr;
   canvas.style.width=W+'px';
@@ -659,6 +661,11 @@ function drawProdChart(wireByWeek){
       }
     }
   });
+
+  if(!_prodChartResizeObserver&&canvas.parentElement){
+    _prodChartResizeObserver=new ResizeObserver(()=>{if(wireByWeekGlobal!==null)drawProdChart(wireByWeekGlobal);});
+    _prodChartResizeObserver.observe(canvas.parentElement);
+  }
 }
 
 
@@ -2641,7 +2648,6 @@ async function api(p){
 function showToast(msg,type,dur){const t=document.getElementById('toast');t.textContent=msg;t.className=`toast ${type} show`;setTimeout(()=>t.className='toast',dur||3000);}
 window.addEventListener('resize',()=>{
   if(document.getElementById('ptab-map').classList.contains('active'))renderEdges();
-  if(document.getElementById('ptab-home').classList.contains('active')&&wireByWeekGlobal!==null)drawProdChart(wireByWeekGlobal);
 });
 
 if(!managerName){document.getElementById('login-screen').innerHTML='<div class="login-box"><div class="login-logo">The <span>Back Office</span></div><h2 style="font-size:18px;margin-bottom:8px;text-align:center;">No manager specified</h2><p style="color:var(--muted);font-size:13px;text-align:center;">Add your name to the URL: manager.html?name=sarah</p></div>';}
