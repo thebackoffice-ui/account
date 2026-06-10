@@ -428,7 +428,7 @@ function renderHome(){
     <div class="hg-row hg-main">
 
       <!-- Production History -->
-      <div style="background:#fff;border-radius:10px;padding:22px 24px;box-shadow:var(--niond-shadow);">
+      <div style="background:#fff;border-radius:10px;padding:22px 24px;box-shadow:var(--niond-shadow);align-self:stretch;display:flex;flex-direction:column;">
         <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:16px;">
           <div>
             <div style="font-size:17px;font-weight:800;color:var(--text);letter-spacing:-.02em;">Production History</div>
@@ -444,7 +444,7 @@ function renderHome(){
             <div style="width:10px;height:10px;border-radius:50%;background:#26C6B0;"></div>Manager Take
           </div>
         </div>
-        <canvas id="prod-chart-canvas" style="width:100%;height:160px;display:block;"></canvas>
+        <canvas id="prod-chart-canvas" style="width:100%;flex:1;min-height:120px;display:block;"></canvas>
       </div>
 
       <!-- This Week's Links — each as its own card -->
