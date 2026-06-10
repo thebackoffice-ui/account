@@ -2647,7 +2647,7 @@ window.addEventListener('resize',()=>{
   },150);
 });
 
-if(guestMode && guestGroupKey && guestToken){
+if(guestMode && guestGroupKey){
   dpGuestInit();
 } else if(!managerName){
   document.getElementById('login-screen').innerHTML='<div class="login-box"><div class="login-logo">The <span>Back Office</span></div><h2 style="font-size:18px;margin-bottom:8px;text-align:center;">No manager specified</h2><p style="color:var(--muted);font-size:13px;text-align:center;">Add your name to the URL: manager.html?name=sarah</p></div>';
@@ -3578,7 +3578,7 @@ async function dpGuestInit(){
 
   // Load planner data and start live poll
   try {
-    const results = await Promise.all(dates.map(date=>api({action:'getDailyPlanner',manager:dpGroupKey,date,guestToken})));
+    const results = await Promise.all(dates.map(date=>api({action:'getDailyPlanner',manager:dpGroupKey,date})));
     results.forEach((res,i)=>{
       if(res.data){try{dpData[dates[i]]=JSON.parse(res.data);}catch(e){dpData[dates[i]]=dpBlank();}}
       else{if(!dpData[dates[i]])dpData[dates[i]]=dpBlank();}
@@ -3591,17 +3591,15 @@ async function dpGuestInit(){
 }
 
 async function dpShareLink(){
-  if(!dpGroupKey){showToast('Planner not set up yet','error');return;}
+  if(!dpGroupKey){showToast('Planner not assigned yet','error');return;}
   try{
-    const res = await api({action:'createPlannerToken',manager:managerName,groupKey:dpGroupKey});
-    if(!res||!res.token){showToast('Could not generate link','error');return;}
     const gk = btoa(dpGroupKey);
     const base = location.origin + location.pathname;
-    const url = `${base}?name=${encodeURIComponent(managerName)}&plannerGuest=1&gk=${encodeURIComponent(gk)}&gt=${encodeURIComponent(res.token)}`;
+    const url = `${base}?name=${encodeURIComponent(managerName)}&plannerGuest=1&gk=${encodeURIComponent(gk)}`;
     await navigator.clipboard.writeText(url);
-    showToast('Share link copied to clipboard ✓','success',3500);
+    showToast('Share link copied ✓','success',3500);
   }catch(e){
-    showToast('Could not copy link — try again','error');
+    showToast('Could not copy — try again','error');
   }
 }
 
