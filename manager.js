@@ -3574,23 +3574,21 @@ async function dpGuestInit(){
   if(pill) pill.textContent = `w/c ${dpDateLabel(dates[0]).replace(/^[A-Za-z]+,? /,'')}`;
   const tabsEl = document.getElementById('dp-day-tabs');
   const days = ['Mon','Tue','Wed','Thu','Fri'];
-  tabsEl.innerHTML = days.map((d,i)=>`<button class="dp-day-tab ${i===dpActiveDayIdx?'active':''}" onclick="dpSwitchDay(${i})">${d} <span style="font-weight:400;opacity:.7;">${dpDateLabel(dates[i]).split(' ').slice(1).join(' ')}</span></button>`).join('');
+  if(tabsEl) tabsEl.innerHTML = days.map((d,i)=>`<button class="dp-day-tab ${i===dpActiveDayIdx?'active':''}" onclick="dpSwitchDay(${i})">${d} <span style="font-weight:400;opacity:.7;">${dpDateLabel(dates[i]).split(' ').slice(1).join(' ')}</span></button>`).join('');
 
-  // Load planner data and start live poll
+  // Render immediately with blank data so the planner appears right away
+  dates.forEach(d=>{if(!dpData[d])dpData[d]=dpBlank();});
+  try{ dpRenderDay(); }catch(e){}
+
+  // Then load real data from the sheet in the background and re-render
   try {
     const results = await Promise.all(dates.map(date=>api({action:'getDailyPlanner',manager:dpGroupKey,date})));
     results.forEach((res,i)=>{
       if(res.data){try{dpData[dates[i]]=JSON.parse(res.data);}catch(e){dpData[dates[i]]=dpBlank();}}
-      else{if(!dpData[dates[i]])dpData[dates[i]]=dpBlank();}
     });
+    try{ dpRenderDay(); }catch(e){}
   } catch(e) {
-    dates.forEach(d=>{if(!dpData[d])dpData[d]=dpBlank();});
-  }
-  try{
-    dpRenderDay();
-  }catch(e){
-    const wrap=document.getElementById('dp-pages-wrap');
-    if(wrap)wrap.innerHTML=`<div style="padding:40px;text-align:center;color:var(--muted);font-size:13px;">Could not load planner — check connection and try again.<br><small style="opacity:.6;">${e.message||''}</small></div>`;
+    // Network error — blank planner is already showing, just start polling
   }
   dpStartPoll();
 }
