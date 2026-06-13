@@ -3586,7 +3586,12 @@ async function dpGuestInit(){
   } catch(e) {
     dates.forEach(d=>{if(!dpData[d])dpData[d]=dpBlank();});
   }
-  dpRenderDay();
+  try{
+    dpRenderDay();
+  }catch(e){
+    const wrap=document.getElementById('dp-pages-wrap');
+    if(wrap)wrap.innerHTML=`<div style="padding:40px;text-align:center;color:var(--muted);font-size:13px;">Could not load planner — check connection and try again.<br><small style="opacity:.6;">${e.message||''}</small></div>`;
+  }
   dpStartPoll();
 }
 
@@ -3659,6 +3664,11 @@ function dpInit(){
 }
 
 async function dpFetchGroup(){
+  // In guest mode, group is already set from the URL — don't fetch or overwrite
+  if(guestMode){
+    dpAdminAssigned = true;
+    return true;
+  }
   const prefRes = await api({action:'getDpSharing',manager:managerName});
   dpSharedWith = prefRes.sharedWith||[];
   dpAdminAssigned = prefRes.adminAssigned||false;
@@ -3667,9 +3677,8 @@ async function dpFetchGroup(){
   dpGroupKey = 'group::' + (prefRes.groupId||prefRes.groupName||dpGroupMembers.join(','));
   const badge = document.getElementById('dp-shared-badge');
   if(badge) badge.style.display = dpSharedWith.length?'':'none';
-  // Show share button for managers with an assigned group
   const shareBtn = document.getElementById('dp-share-btn');
-  if(shareBtn && !guestMode) shareBtn.style.display = '';
+  if(shareBtn) shareBtn.style.display = '';
   return true;
 }
 
