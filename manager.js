@@ -3576,21 +3576,8 @@ async function dpGuestInit(){
   const days = ['Mon','Tue','Wed','Thu','Fri'];
   if(tabsEl) tabsEl.innerHTML = days.map((d,i)=>`<button class="dp-day-tab ${i===dpActiveDayIdx?'active':''}" onclick="dpSwitchDay(${i})">${d} <span style="font-weight:400;opacity:.7;">${dpDateLabel(dates[i]).split(' ').slice(1).join(' ')}</span></button>`).join('');
 
-  // Render immediately with blank data so the planner appears right away
-  dates.forEach(d=>{if(!dpData[d])dpData[d]=dpBlank();});
-  try{ dpRenderDay(); }catch(e){}
-
-  // Then load real data from the sheet in the background and re-render
-  try {
-    const results = await Promise.all(dates.map(date=>api({action:'getDailyPlanner',manager:dpGroupKey,date})));
-    results.forEach((res,i)=>{
-      if(res.data){try{dpData[dates[i]]=JSON.parse(res.data);}catch(e){dpData[dates[i]]=dpBlank();}}
-    });
-    try{ dpRenderDay(); }catch(e){}
-  } catch(e) {
-    // Network error — blank planner is already showing, just start polling
-  }
-  dpStartPoll();
+  // Use the same load flow as regular managers — dpFetchGroup returns early for guests
+  dpLoadAndRender();
 }
 
 async function dpShareLink(){
