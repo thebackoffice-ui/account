@@ -1,6 +1,6 @@
 
 // ── Apps Script source ─────────────────────────────────
-const APPS_SCRIPT_VERSION = '2.7.1';
+const APPS_SCRIPT_VERSION = '2.7.2';
 const APPS_SCRIPT = `// The Back Office — Google Apps Script v${APPS_SCRIPT_VERSION}
 // Extensions > Apps Script > paste > Deploy as Web App (Anyone)
 
@@ -331,14 +331,11 @@ function doPost(e) {
     for(let i=rows.length-1;i>=1;i--){if(rows[i][0]===data.id){th.deleteRow(i+1);break;}} result={ok:true};
 
   } else if (data.action === 'saveDailyPlanner') {
-    // Allow guest tokens for planner saves
-    if(!data.token||!verifyToken(data.token,'manager')){
-      if(data.guestToken){
-        const pts=getOrCreate('planner_tokens',['token','groupKey','manager','createdAt']);
-        const ptRows=pts.getDataRange().getValues().slice(1);
-        const validGuest=ptRows.some(r=>String(r[0])===String(data.guestToken)&&String(r[1])===String(data.manager));
-        if(!validGuest)return ContentService.createTextOutput(JSON.stringify({ok:false,error:'Invalid guest token'})).setMimeType(ContentService.MimeType.JSON);
-      } else if(!verifyToken(data.token||'','admin')){
+    // Group keys (shared planners) are not guessable — allow saves without a session token
+    const isGroupKey = String(data.manager||'').startsWith('group::');
+    if(!isGroupKey){
+      const mgrRole='mgr:'+String(data.manager||'');
+      if(!verifyToken(data.token||'',mgrRole)&&!verifyToken(data.token||'','admin')){
         return ContentService.createTextOutput(JSON.stringify({ok:false,error:'Unauthorised'})).setMimeType(ContentService.MimeType.JSON);
       }
     }
@@ -353,13 +350,6 @@ function doPost(e) {
     result={ok:true};
 
   } else if (data.action === 'getDailyPlanner') {
-    // Allow guest tokens for planner reads
-    if(data.guestToken){
-      const pts=getOrCreate('planner_tokens',['token','groupKey','manager','createdAt']);
-      const ptRows=pts.getDataRange().getValues().slice(1);
-      const validGuest=ptRows.some(r=>String(r[0])===String(data.guestToken)&&String(r[1])===String(data.manager));
-      if(!validGuest)return ContentService.createTextOutput(JSON.stringify({ok:false,error:'Invalid guest token'})).setMimeType(ContentService.MimeType.JSON);
-    }
     const ph=getOrCreate('daily_planner',['manager','date','data','updatedAt']);
     const row=ph.getDataRange().getValues().slice(1).find(r=>r[0]===data.manager&&safeDate(r[1])===data.date);
     result={data:row?String(row[2]||''):null};
