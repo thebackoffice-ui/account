@@ -3576,11 +3576,23 @@ async function dpGuestInit(){
   const days = ['Mon','Tue','Wed','Thu','Fri'];
   if(tabsEl) tabsEl.innerHTML = days.map((d,i)=>`<button class="dp-day-tab ${i===dpActiveDayIdx?'active':''}" onclick="dpSwitchDay(${i})">${d} <span style="font-weight:400;opacity:.7;">${dpDateLabel(dates[i]).split(' ').slice(1).join(' ')}</span></button>`).join('');
 
-  // Use the same load flow as regular managers — dpFetchGroup returns early for guests
-  dpLoadAndRender().catch(e=>{
-    const wrap=document.getElementById('dp-pages-wrap');
-    if(wrap)wrap.innerHTML=`<div style="padding:40px;text-align:center;font-size:13px;color:#ef4444;">Error: ${e&&e.message?e.message:String(e)}</div>`;
-  });
+  // Step 1: immediately stamp the element to confirm it's reachable
+  const wrap=document.getElementById('dp-pages-wrap');
+  if(wrap) wrap.innerHTML='<div style="padding:40px;text-align:center;font-size:14px;color:#0f766e;">Guest view ready — loading data…</div>';
+
+  // Step 2: load data then render
+  const dates2=dpGetWeekDates();
+  dates2.forEach(d=>{dpData[d]=dpBlank();});
+  try{
+    const results=await Promise.all(dates2.map(date=>api({action:'getDailyPlanner',manager:dpGroupKey,date})));
+    results.forEach((res,i)=>{if(res&&res.data){try{dpData[dates2[i]]=JSON.parse(res.data);}catch(e){}}});
+  }catch(e){
+    if(wrap)wrap.innerHTML+=`<div style="font-size:12px;color:#ef4444;margin-top:8px;">API error: ${e&&e.message?e.message:String(e)}</div>`;
+  }
+  try{dpRenderDay();}catch(e){
+    if(wrap)wrap.innerHTML=`<div style="padding:40px;font-size:13px;color:#ef4444;">Render error: ${e&&e.message?e.message:String(e)}</div>`;
+  }
+  dpStartPoll();
 }
 
 async function dpShareLink(){
