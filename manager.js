@@ -3844,7 +3844,8 @@ function dpRenderDay(){
   // Wrap in A4 container
   const html = `${collabBar}<div class="dp-page-a4-wrap">${pagesHtml}</div>`;
 
-  (document.getElementById('dp-pages-wrap')||document.querySelector('.dp-pages-wrap')).innerHTML = html;
+  const _pw=document.getElementById('dp-pages-wrap')||document.querySelector('.dp-pages-wrap');
+  if(_pw)_pw.innerHTML=html;
   // Store hash of loaded data for poll comparison
   // Baseline hash set by first successful poll, not here
 }
