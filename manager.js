@@ -3576,9 +3576,18 @@ async function dpGuestInit(){
   const days = ['Mon','Tue','Wed','Thu','Fri'];
   if(tabsEl) tabsEl.innerHTML = days.map((d,i)=>`<button class="dp-day-tab ${i===dpActiveDayIdx?'active':''}" onclick="dpSwitchDay(${i})">${d} <span style="font-weight:400;opacity:.7;">${dpDateLabel(dates[i]).split(' ').slice(1).join(' ')}</span></button>`).join('');
 
-  // Step 1: immediately stamp the element to confirm it's reachable
-  const wrap=document.getElementById('dp-pages-wrap')||plannerTab.querySelector('.dp-pages-wrap');
-  if(wrap) wrap.innerHTML='<div style="padding:40px;text-align:center;font-size:14px;color:#0f766e;">Guest view ready — loading data…</div>';
+  // Debug: confirm what elements exist
+  const wrap=document.getElementById('dp-pages-wrap')||document.querySelector('.dp-pages-wrap');
+  const debugInfo=`gk=${!!guestGroupKey} | plannerTab=${!!plannerTab} | wrap=${!!wrap} | inner=${plannerTab?plannerTab.innerHTML.length:'na'}`;
+  if(wrap){
+    wrap.innerHTML=`<div style="padding:40px;text-align:center;font-size:14px;color:#0f766e;">Guest view ready — loading data…<br><small style="font-size:10px;opacity:.5;">${debugInfo}</small></div>`;
+  } else {
+    // wrap not found — inject directly into plannerTab
+    const div=document.createElement('div');
+    div.style.cssText='padding:40px;text-align:center;font-size:14px;color:#ef4444;';
+    div.textContent='wrap not found: '+debugInfo;
+    if(plannerTab)plannerTab.appendChild(div);
+  }
 
   // Step 2: load data then render
   const dates2=dpGetWeekDates();
