@@ -3577,7 +3577,7 @@ async function dpGuestInit(){
   if(tabsEl) tabsEl.innerHTML = days.map((d,i)=>`<button class="dp-day-tab ${i===dpActiveDayIdx?'active':''}" onclick="dpSwitchDay(${i})">${d} <span style="font-weight:400;opacity:.7;">${dpDateLabel(dates[i]).split(' ').slice(1).join(' ')}</span></button>`).join('');
 
   // Step 1: immediately stamp the element to confirm it's reachable
-  const wrap=document.getElementById('dp-pages-wrap');
+  const wrap=document.getElementById('dp-pages-wrap')||plannerTab.querySelector('.dp-pages-wrap');
   if(wrap) wrap.innerHTML='<div style="padding:40px;text-align:center;font-size:14px;color:#0f766e;">Guest view ready — loading data…</div>';
 
   // Step 2: load data then render
@@ -3708,7 +3708,7 @@ async function dpLoadAndRender(silent=false){
 
 function dpRenderLocked(){
   clearInterval(dpPollTimer);
-  const wrap = document.getElementById('dp-pages-wrap');
+  const wrap = document.getElementById('dp-pages-wrap')||document.querySelector('.dp-pages-wrap');
   if(wrap) wrap.innerHTML = `
     <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:340px;gap:14px;color:var(--muted);text-align:center;padding:32px;">
       <div style="color:var(--muted);">${SVG.lock.replace('width="16" height="16"','width="36" height="36"')}</div>
@@ -3744,7 +3744,7 @@ async function dpPollForChanges(){
     if(incoming){
       if(dpPollInitialised && incoming !== dpLastSavedHash){
         const active = document.activeElement;
-        const editing = active && (active.tagName==='TEXTAREA'||active.tagName==='INPUT') && document.getElementById('dp-pages-wrap')?.contains(active);
+        const editing = active && (active.tagName==='TEXTAREA'||active.tagName==='INPUT') && (document.getElementById('dp-pages-wrap')||document.querySelector('.dp-pages-wrap'))?.contains(active);
             if(!editing){
           try{dpData[date]=JSON.parse(incoming);}catch(e){}
           dpLastSavedHash = incoming;
@@ -3835,7 +3835,7 @@ function dpRenderDay(){
   // Wrap in A4 container
   const html = `${collabBar}<div class="dp-page-a4-wrap">${pagesHtml}</div>`;
 
-  document.getElementById('dp-pages-wrap').innerHTML = html;
+  (document.getElementById('dp-pages-wrap')||document.querySelector('.dp-pages-wrap')).innerHTML = html;
   // Store hash of loaded data for poll comparison
   // Baseline hash set by first successful poll, not here
 }
