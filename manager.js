@@ -3577,7 +3577,10 @@ async function dpGuestInit(){
   if(tabsEl) tabsEl.innerHTML = days.map((d,i)=>`<button class="dp-day-tab ${i===dpActiveDayIdx?'active':''}" onclick="dpSwitchDay(${i})">${d} <span style="font-weight:400;opacity:.7;">${dpDateLabel(dates[i]).split(' ').slice(1).join(' ')}</span></button>`).join('');
 
   // Use the same load flow as regular managers — dpFetchGroup returns early for guests
-  dpLoadAndRender();
+  dpLoadAndRender().catch(e=>{
+    const wrap=document.getElementById('dp-pages-wrap');
+    if(wrap)wrap.innerHTML=`<div style="padding:40px;text-align:center;font-size:13px;color:#ef4444;">Error: ${e&&e.message?e.message:String(e)}</div>`;
+  });
 }
 
 async function dpShareLink(){
